@@ -1,0 +1,179 @@
+// Mock data matching SKA Science Regional Centre (SNH) Helpdesk structure
+export const MOCK_SNH_TICKETS = [
+  {
+    id: "10101",
+    key: "SNH-342",
+    summary: "High-throughput data staging failure on UK SRC Node during Cycle 1 simulation",
+    areaNode: "UK SRC / Data Transfer",
+    assignee: null,
+    reporter: "Elena Rostova",
+    status: "Open",
+    priority: "Highest",
+    impact: "High Impact",
+    created: "2026-09-24T14:20:00Z",
+    updated: "2026-09-28T09:15:00Z", // Inactive > 3 days
+    lastMeaningfulUpdate: "2026-09-28T09:15:00Z",
+    nextAction: "Assign node technical lead for storage quota check",
+    reviewDate: "2026-09-30", // Overdue
+    components: ["Data Management", "UK SRC"],
+    queue: "Triage / Unassigned",
+    isCrossNode: true,
+    isBlocker: true,
+    pendingClosure: false,
+    acceptancePending: false,
+    actionsHistory: [
+      { date: "2026-09-24", author: "Elena Rostova", text: "Ticket opened with crash logs." },
+      { date: "2026-09-28", author: "System", text: "Cross-node sync attempt failed." }
+    ]
+  },
+  {
+    id: "10102",
+    key: "SNH-339",
+    summary: "User authentication failure via SKAO IAM OAuth token refresh",
+    areaNode: "Global IAM / Authentication",
+    assignee: "Marco Bellini",
+    reporter: "John Davies",
+    status: "In Progress",
+    priority: "High",
+    impact: "High Impact",
+    created: "2026-09-22T08:10:00Z",
+    updated: "2026-09-29T16:45:00Z",
+    lastMeaningfulUpdate: "2026-09-29T16:45:00Z",
+    nextAction: "Deploy patch v2.4.1 to staging cluster",
+    reviewDate: "2026-10-02",
+    components: ["Security", "IAM"],
+    queue: "Tier 2 Support",
+    isCrossNode: false,
+    isBlocker: false,
+    pendingClosure: false,
+    acceptancePending: true,
+    actionsHistory: [
+      { date: "2026-09-29", author: "Marco Bellini", text: "Identified token expiration drift." }
+    ]
+  },
+  {
+    id: "10103",
+    key: "SNH-320",
+    summary: "CASA 6.5 pipeline container fails to initialize GPU environment on Aus-SRC",
+    areaNode: "AUS SRC / Compute",
+    assignee: null,
+    reporter: "Sarah Lin",
+    status: "Open",
+    priority: "High",
+    impact: "Normal",
+    created: "2026-09-15T11:00:00Z",
+    updated: "2026-09-20T10:00:00Z", // Inactive > 10 days! Stalled!
+    lastMeaningfulUpdate: "2026-09-20T10:00:00Z",
+    nextAction: "Need response from Aus-SRC sysadmin team",
+    reviewDate: "2026-09-25", // Overdue!
+    components: ["Containers", "AUS SRC"],
+    queue: "Triage / Unassigned",
+    isCrossNode: true,
+    isBlocker: true,
+    pendingClosure: false,
+    acceptancePending: false,
+    actionsHistory: [
+      { date: "2026-09-20", author: "Sarah Lin", text: "Provided singularity log files." }
+    ]
+  },
+  {
+    id: "10104",
+    key: "SNH-311",
+    summary: "Request for proposal pipeline storage allocation for Pulsar Timing Consortium",
+    areaNode: "SPDO / Quota",
+    assignee: "Claire Dupont",
+    reporter: "Michael Chang",
+    status: "Resolved",
+    priority: "Medium",
+    impact: "Low",
+    created: "2026-09-10T14:30:00Z",
+    updated: "2026-09-27T12:00:00Z",
+    lastMeaningfulUpdate: "2026-09-27T12:00:00Z",
+    nextAction: "Confirm user satisfaction and close ticket",
+    reviewDate: "2026-10-01",
+    components: ["Storage Quotas"],
+    queue: "Pending User Acceptance",
+    isCrossNode: false,
+    isBlocker: false,
+    pendingClosure: true,
+    acceptancePending: true,
+    actionsHistory: [
+      { date: "2026-09-27", author: "Claire Dupont", text: "50TB storage allocation granted." }
+    ]
+  },
+  {
+    id: "10105",
+    key: "SNH-305",
+    summary: "Inter-node data replication delay between SPDO and ES-SRC",
+    areaNode: "ES SRC / Networking",
+    assignee: "Carlos Garcia",
+    reporter: "Claire Dupont",
+    status: "In Review",
+    priority: "High",
+    impact: "High Impact",
+    created: "2026-09-08T09:00:00Z",
+    updated: "2026-09-30T15:20:00Z",
+    lastMeaningfulUpdate: "2026-09-30T15:20:00Z",
+    nextAction: "Re-verify bandwidth throughput after optical link reboot",
+    reviewDate: "2026-10-03",
+    components: ["Networking", "ES SRC"],
+    queue: "Cross-Node Coordination",
+    isCrossNode: true,
+    isBlocker: false,
+    pendingClosure: false,
+    acceptancePending: false,
+    actionsHistory: [
+      { date: "2026-09-30", author: "Carlos Garcia", text: "Fiber route maintenance performed." }
+    ]
+  },
+  {
+    id: "10106",
+    key: "SNH-298",
+    summary: "Outdated documentation link in SKA Science Portal user guide",
+    areaNode: "Documentation / Portal",
+    assignee: "Alex Thorne",
+    reporter: "User Community",
+    status: "Resolved",
+    priority: "Low",
+    impact: "Low",
+    created: "2026-08-28T10:00:00Z",
+    updated: "2026-09-25T11:00:00Z",
+    lastMeaningfulUpdate: "2026-09-25T11:00:00Z",
+    nextAction: "Ready for monthly hygiene sweep / retention verify",
+    reviewDate: "2026-09-29",
+    components: ["Documentation"],
+    queue: "Pending Closure Sweep",
+    isCrossNode: false,
+    isBlocker: false,
+    pendingClosure: true,
+    acceptancePending: false,
+    actionsHistory: [
+      { date: "2026-09-25", author: "Alex Thorne", text: "Updated URL redirect." }
+    ]
+  },
+  {
+    id: "10107",
+    key: "SNH-280",
+    summary: "Duplicate ticket: JupyterHub kernel dies unexpectedly during spectral line fit",
+    areaNode: "CN-SRC / Interactive",
+    assignee: "Wei Zhang",
+    reporter: "Wei Zhang",
+    status: "Open",
+    priority: "Medium",
+    impact: "Normal",
+    created: "2026-08-15T08:00:00Z",
+    updated: "2026-09-01T10:00:00Z", // Inactive > 30 days!
+    lastMeaningfulUpdate: "2026-09-01T10:00:00Z",
+    nextAction: "Merge into main ticket SNH-254 or close as duplicate",
+    reviewDate: "2026-09-15",
+    components: ["JupyterHub"],
+    queue: "Hygiene Candidates",
+    isCrossNode: false,
+    isBlocker: false,
+    pendingClosure: false,
+    acceptancePending: false,
+    actionsHistory: [
+      { date: "2026-09-01", author: "Wei Zhang", text: "Suspected duplicate of SNH-254." }
+    ]
+  }
+];
