@@ -9,6 +9,7 @@ import { DashboardGrid } from './DashboardGrid';
 import { TicketTable } from './TicketTable';
 import { TicketModal } from './TicketModal';
 import { NodesSummary } from './NodesSummary';
+import { MetricsSummary } from './MetricsSummary';
 import { MOCK_SNH_TICKETS } from './mockData';
 import { AREAS, countActiveTicketsForArea, ticketHasArea } from './areas';
 import { jqlString } from './jql';
@@ -52,7 +53,7 @@ export function App() {
         const jql = `project = "${config.projectKey}" ORDER BY updated DESC`;
         const fields = [
           'summary', 'components', 'customfield_17813', 'customfield_17976', 'assignee', 'reporter',
-          'status', 'priority', 'created', 'updated', 'labels'
+          'status', 'priority', 'created', 'updated', 'resolutiondate', 'labels', 'customfield_14119'
         ].join(',');
         const headers = {
           'Accept': 'application/json',
@@ -78,6 +79,26 @@ export function App() {
         }
 
         const data = await res.json();
+        const loadSlaKeys = async (slaClause) => {
+          const slaJql = `project = "${config.projectKey}" AND (${slaClause})`;
+          const slaQuery = `jql=${encodeURIComponent(slaJql)}&fields=key&maxResults=1000`;
+          const slaEndpoint = targetUrl.includes('jira.skatelescope.org')
+            ? `/jira-api/rest/api/2/search?${slaQuery}`
+            : `${targetUrl}/rest/api/2/search?${slaQuery}`;
+
+          try {
+            const slaResponse = await fetch(slaEndpoint, { method: 'GET', headers });
+            if (!slaResponse.ok) return new Set();
+            const slaData = await slaResponse.json();
+            return new Set((slaData.issues || []).map(issue => issue.key));
+          } catch {
+            return new Set();
+          }
+        };
+        const [slaBreachedKeys, slaAtRiskKeys] = await Promise.all([
+          loadSlaKeys('"Time to resolution" = breached()'),
+          loadSlaKeys('"Time to resolution" = remaining("4h")')
+        ]);
         
         const formatted = (data.issues || []).map(issue => {
           // "Area" is the SRCNet JIRA custom field customfield_17813, not a component.
@@ -98,6 +119,10 @@ export function App() {
           impact: issue.fields.priority?.name === 'Highest' ? 'High Impact' : 'Normal',
           created: issue.fields.created,
           updated: issue.fields.updated,
+          resolutionDate: issue.fields.resolutiondate,
+          firstResponseMs: issue.fields.customfield_14119?.completedCycles?.[0]?.elapsedTime?.millis,
+          slaBreached: slaBreachedKeys.has(issue.key),
+          slaAtRisk: slaAtRiskKeys.has(issue.key),
           lastMeaningfulUpdate: issue.fields.updated,
           nextAction: 'Pending review',
           reviewDate: new Date(Date.now() + 86400000 * 3).toISOString().split('T')[0],
@@ -317,6 +342,8 @@ export function App() {
           <WeeklyIndicators tickets={areaFilteredTickets} onSelectBox={handleBoxClick} baseJql={areaBaseJql} />
 
           <NodesSummary tickets={areaFilteredTickets} onSelectBox={handleBoxClick} baseJql={areaBaseJql} />
+
+          <MetricsSummary tickets={areaFilteredTickets} onSelectBox={handleBoxClick} baseJql={areaBaseJql} />
 
           {/* Periodic Hygiene Component */}
           {showHygiene && (

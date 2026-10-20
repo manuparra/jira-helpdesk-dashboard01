@@ -211,6 +211,17 @@ body {
 .node-count { margin: 10px 0 8px; color: var(--text-main); font-family: var(--font-mono); font-size: 1.9rem; }
 .node-update { display: flex; align-items: center; gap: 5px; color: var(--text-muted); font-size: 0.72rem; }
 
+.metrics-section { margin: 0 0 30px; }
+.metrics-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(205px, 1fr)); gap: 14px; }
+.metric-card { display: flex; flex-direction: column; min-height: 164px; padding: 16px; cursor: pointer; border-color: var(--border-color); }
+.metric-card-head { display: flex; justify-content: space-between; gap: 8px; color: var(--text-muted); font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+.metric-card > strong { margin-top: 12px; color: var(--text-main); font-family: var(--font-mono); font-size: 1.75rem; }
+.metric-card > p { min-height: 34px; margin: 7px 0 0; color: var(--text-muted); font-size: 0.76rem; }
+.metric-card .view-tickets-link { margin-top: auto; }
+.metric-red { border-color: rgba(239, 68, 68, 0.45); }.metric-green { border-color: rgba(16, 185, 129, 0.45); }.metric-orange { border-color: rgba(249, 115, 22, 0.45); }.metric-purple { border-color: rgba(139, 92, 246, 0.45); }.metric-blue { border-color: rgba(59, 130, 246, 0.45); }
+.metrics-subheading { margin: 24px 0 12px; color: var(--text-main); font-size: 0.95rem; }
+.metric-empty { padding: 20px; color: var(--text-muted); }
+
 .jql-debug {
   display: flex;
   justify-content: space-between;
