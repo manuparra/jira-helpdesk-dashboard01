@@ -302,7 +302,7 @@ export function App() {
           </section>
 
           {/* Weekly Indicators KPI Bar */}
-          <WeeklyIndicators tickets={areaFilteredTickets} />
+          <WeeklyIndicators tickets={areaFilteredTickets} onSelectBox={handleBoxClick} />
 
           {/* Periodic Hygiene Component */}
           {showHygiene && (

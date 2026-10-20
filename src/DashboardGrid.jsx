@@ -4,6 +4,7 @@ import {
   CheckSquare, Layers, Folder, UserCheck, AlertTriangle, 
   CheckCircle2, MessageSquare, ChevronRight
 } from 'lucide-react';
+import { isOwnerlessTicket } from './areas';
 
 export function DashboardGrid({ tickets, onSelectBox }) {
   const now = new Date();
@@ -22,7 +23,7 @@ export function DashboardGrid({ tickets, onSelectBox }) {
       id: 'unassigned',
       title: 'Unassigned',
       subtitle: 'Open tickets needing lead assignment',
-      tickets: tickets.filter(t => !t.assignee && t.status !== 'Closed'),
+      tickets: tickets.filter(isOwnerlessTicket),
       icon: <UserX size={20} color="#ef4444" />,
       color: '#ef4444',
       bg: 'rgba(239, 68, 68, 0.08)'
@@ -209,6 +210,11 @@ export function DashboardGrid({ tickets, onSelectBox }) {
         <div
           key={box.id}
           onClick={() => onSelectBox(box.title, box.tickets)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') onSelectBox(box.title, box.tickets);
+          }}
           className="glass-panel"
           style={{
             padding: '18px 20px',
@@ -262,19 +268,16 @@ export function DashboardGrid({ tickets, onSelectBox }) {
             </p>
           </div>
 
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'flex-end',
-            gap: '4px',
-            marginTop: '16px',
-            fontSize: '0.78rem',
-            color: box.color,
-            fontWeight: 600
-          }}>
-            <span>View Tickets</span>
-            <ChevronRight size={14} />
-          </div>
+          <button
+            className="view-tickets-link"
+            style={{ color: box.color }}
+            onClick={(event) => {
+              event.stopPropagation();
+              onSelectBox(box.title, box.tickets);
+            }}
+          >
+            View Tickets <ChevronRight size={14} />
+          </button>
         </div>
       ))}
     </div>

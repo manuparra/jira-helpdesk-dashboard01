@@ -134,6 +134,26 @@ body {
 
 .area-filter strong { color: var(--text-main); }
 
+.view-tickets-link {
+  align-self: flex-end;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 16px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--accent-cyan);
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.view-tickets-link:hover,
+.view-tickets-link:focus-visible {
+  text-decoration: underline;
+}
+
 @media (max-width: 760px) {
   .area-filter { grid-template-columns: 1fr; gap: 10px; }
 }
