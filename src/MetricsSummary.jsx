@@ -1,7 +1,7 @@
 import React from 'react';
-import { Activity, ArrowDownRight, ArrowUpRight, Clock3, ShieldAlert, UserX, Users, UserRoundCheck, Timer } from 'lucide-react';
+import { Activity, ArrowDownRight, ArrowUpRight, Clock3, ShieldAlert, UserX, UserRoundCheck, Timer } from 'lucide-react';
 import { isActiveTicket, isOwnerlessTicket } from './areas';
-import { addJqlClause, jqlString } from './jql';
+import { addJqlClause } from './jql';
 
 const dayMs = 24 * 60 * 60 * 1000;
 const today = () => new Date().toISOString().slice(0, 10);
@@ -39,7 +39,6 @@ export function MetricsSummary({ tickets, onSelectBox, baseJql }) {
   const waiting = active.filter(ticket => ticket.status === 'Waiting for customer');
   const firstResponseSamples = tickets.map(ticket => ticket.firstResponseMs).filter(Number.isFinite);
   const priorities = ['Highest', 'High', 'Medium', 'Low'];
-  const technicians = [...new Set(tickets.map(ticket => ticket.assignee).filter(Boolean))].sort();
 
   return (
     <section className="metrics-section">
@@ -64,16 +63,6 @@ export function MetricsSummary({ tickets, onSelectBox, baseJql }) {
           const duration = median(resolved.map(ticket => new Date(ticket.resolutionDate) - new Date(ticket.created)));
           return <MetricCard key={priority} title={`${priority} priority`} value={formatDuration(duration)} detail={`${resolved.length} resolved ticket${resolved.length === 1 ? '' : 's'}`} icon={<Timer size={19} />} tickets={resolved} jql={addJqlClause(baseJql, `priority = ${priority} AND resolutiondate IS NOT EMPTY`)} onSelectBox={onSelectBox} tone="blue" />;
         })}
-      </div>
-
-      <h4 className="metrics-subheading">Workload by technician</h4>
-      <div className="metrics-grid">
-        {technicians.length ? technicians.map(technician => {
-          const assigned = active.filter(ticket => ticket.assignee === technician);
-          const completed = resolvedToday.filter(ticket => ticket.assignee === technician);
-          const technicianTickets = [...new Map([...assigned, ...completed].map(ticket => [ticket.key, ticket])).values()];
-          return <MetricCard key={technician} title={technician} value={assigned.length} detail={`${completed.length} resolved today`} icon={<Users size={19} />} tickets={technicianTickets} jql={addJqlClause(baseJql, `assignee = ${jqlString(technician)} AND (status NOT IN (Resolved, Closed) OR resolutiondate >= startOfDay())`)} onSelectBox={onSelectBox} tone="cyan" />;
-        }) : <div className="glass-panel metric-empty">No assigned technicians in this area.</div>}
       </div>
     </section>
   );

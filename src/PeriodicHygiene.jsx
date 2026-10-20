@@ -13,7 +13,7 @@ export function PeriodicHygiene({ tickets, onHygieneAction }) {
     <div className="glass-panel" style={{ padding: '24px', marginBottom: '28px', border: '1px solid rgba(139, 92, 246, 0.3)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
         <div>
-          <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <RefreshCw size={18} color="#8b5cf6" />
             Periodic Hygiene Sweep (Monthly / PI Review)
           </h3>
@@ -56,11 +56,11 @@ export function PeriodicHygiene({ tickets, onHygieneAction }) {
                     Area: {ticket.areaNode}
                   </span>
                 </div>
-                <div style={{ color: '#fff', fontSize: '0.88rem', fontWeight: 500 }}>
+                <div style={{ color: 'var(--text-main)', fontSize: '0.88rem', fontWeight: 500 }}>
                   {ticket.summary}
                 </div>
                 {ticket.nextAction && (
-                  <div style={{ fontSize: '0.78rem', color: '#a5f3fc' }}>
+                  <div style={{ fontSize: '0.78rem', color: 'var(--accent-cyan)' }}>
                     Prev Action: {ticket.nextAction}
                   </div>
                 )}

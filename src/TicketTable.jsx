@@ -91,7 +91,7 @@ export function TicketTable({ tickets, jiraUrl, onUpdateTicketAction }) {
                         </span>
                       )}
                     </div>
-                    <div style={{ fontWeight: 600, color: '#fff', fontSize: '0.9rem', lineHeight: '1.3' }}>
+                    <div style={{ fontWeight: 600, color: 'var(--text-main)', fontSize: '0.9rem', lineHeight: '1.3' }}>
                       {ticket.summary}
                     </div>
                   </td>
@@ -107,7 +107,7 @@ export function TicketTable({ tickets, jiraUrl, onUpdateTicketAction }) {
                   {/* Owner / Assignee */}
                   <td style={{ padding: '16px' }}>
                     {ticket.assignee ? (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#fff' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-main)' }}>
                         <User size={14} color="var(--accent-blue)" />
                         <span>{ticket.assignee}</span>
                       </div>
@@ -161,7 +161,7 @@ export function TicketTable({ tickets, jiraUrl, onUpdateTicketAction }) {
                             background: 'var(--bg-input)',
                             border: '1px solid var(--accent-cyan)',
                             borderRadius: '6px',
-                            color: '#fff',
+                            color: 'var(--text-main)',
                             fontSize: '0.82rem'
                           }}
                         />
@@ -175,7 +175,7 @@ export function TicketTable({ tickets, jiraUrl, onUpdateTicketAction }) {
                               background: 'var(--bg-input)',
                               border: '1px solid var(--border-color)',
                               borderRadius: '6px',
-                              color: '#fff',
+                              color: 'var(--text-main)',
                               fontSize: '0.78rem'
                             }}
                           />
@@ -198,7 +198,7 @@ export function TicketTable({ tickets, jiraUrl, onUpdateTicketAction }) {
                       </div>
                     ) : (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <div style={{ color: '#fff', fontSize: '0.85rem' }}>
+                        <div style={{ color: 'var(--text-main)', fontSize: '0.85rem' }}>
                           {ticket.nextAction || <span style={{ color: 'var(--text-dim)', italic: 'true' }}>No next action recorded</span>}
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '4px' }}>

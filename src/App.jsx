@@ -230,12 +230,12 @@ export function App() {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <h1 style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
-                SKA Science Regional Centre Helpdesk Review
+                SKA Regional Centre Helpdesk Review
               </h1>
               <span className="badge badge-cyan">SNH Project</span>
             </div>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '2px' }}>
-              One exception list supporting meeting and daily duty checks • JIRA SKAO Node
+              JIRA SKAO Node
             </p>
           </div>
         </div>

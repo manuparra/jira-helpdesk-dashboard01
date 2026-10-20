@@ -61,7 +61,7 @@ export function TicketModal({ isOpen, onClose, title, tickets, jiraUrl, jql, jql
           background: 'rgba(255, 255, 255, 0.02)'
         }}>
           <div>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
               {title}
             </h2>
             <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: '4px 0 0 0' }}>
@@ -74,7 +74,7 @@ export function TicketModal({ isOpen, onClose, title, tickets, jiraUrl, jql, jql
               background: 'rgba(255, 255, 255, 0.06)',
               border: '1px solid var(--border-color)',
               borderRadius: '8px',
-              color: '#fff',
+              color: 'var(--text-main)',
               padding: '8px',
               cursor: 'pointer',
               display: 'flex',
@@ -137,7 +137,7 @@ export function TicketModal({ isOpen, onClose, title, tickets, jiraUrl, jql, jql
                           </span>
                         )}
                       </div>
-                      <div style={{ fontWeight: 600, color: '#fff', fontSize: '0.88rem', lineHeight: '1.3' }}>
+                      <div style={{ fontWeight: 600, color: 'var(--text-main)', fontSize: '0.88rem', lineHeight: '1.3' }}>
                         {ticket.summary}
                       </div>
                     </td>
@@ -153,7 +153,7 @@ export function TicketModal({ isOpen, onClose, title, tickets, jiraUrl, jql, jql
                     {/* Assignee */}
                     <td style={{ padding: '14px' }}>
                       {ticket.assignee ? (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#fff' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-main)' }}>
                           <User size={13} color="var(--accent-blue)" />
                           <span>{ticket.assignee}</span>
                         </div>
@@ -175,7 +175,7 @@ export function TicketModal({ isOpen, onClose, title, tickets, jiraUrl, jql, jql
                     </td>
 
                     {/* Age / Wait */}
-                    <td style={{ padding: '14px', fontFamily: 'var(--font-mono)', fontSize: '0.82rem', color: '#a5f3fc' }}>
+                    <td style={{ padding: '14px', fontFamily: 'var(--font-mono)', fontSize: '0.82rem', color: 'var(--accent-cyan)' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <Clock size={13} />
                         {calculateWaitTime(ticket.created)}

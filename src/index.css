@@ -77,6 +77,13 @@ body {
     radial-gradient(circle at 85% 85%, rgba(139, 92, 246, 0.09) 0%, transparent 40%);
 }
 
+[data-theme='light'] .glass-panel {
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.10);
+}
+
+[data-theme='light'] .badge-cyan { color: #0b6475; }
+[data-theme='light'] .ticket-key { color: #047e9b; }
+
 .theme-toggle {
   padding: 8px 12px;
   background: var(--bg-input);
