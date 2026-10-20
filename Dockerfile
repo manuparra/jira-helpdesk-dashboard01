@@ -5,9 +5,14 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Keep build-time tools available even if the host/CI passes production npm settings.
+ENV NODE_ENV=development \
+    NPM_CONFIG_PRODUCTION=false
+
 # Copy dependency manifests and install dependencies
 COPY package*.json ./
-RUN npm ci --include=dev
+RUN npm ci --include=dev \
+    && test -x node_modules/.bin/vite
 
 # Copy application source code
 COPY . .
