@@ -8,6 +8,7 @@ import { PeriodicHygiene } from './PeriodicHygiene';
 import { DashboardGrid } from './DashboardGrid';
 import { TicketTable } from './TicketTable';
 import { TicketModal } from './TicketModal';
+import { NodesSummary } from './NodesSummary';
 import { MOCK_SNH_TICKETS } from './mockData';
 import { AREAS, countActiveTicketsForArea, ticketHasArea } from './areas';
 import { jqlString } from './jql';
@@ -50,7 +51,7 @@ export function App() {
       try {
         const jql = `project = "${config.projectKey}" ORDER BY updated DESC`;
         const fields = [
-          'summary', 'components', 'customfield_17813', 'assignee', 'reporter',
+          'summary', 'components', 'customfield_17813', 'customfield_17976', 'assignee', 'reporter',
           'status', 'priority', 'created', 'updated', 'labels'
         ].join(',');
         const headers = {
@@ -89,6 +90,7 @@ export function App() {
           area,
           areaNode: area,
           areas: [area],
+          affectedNodes: issue.fields.customfield_17976?.map(node => node.value) || [],
           assignee: issue.fields.assignee ? issue.fields.assignee.displayName : null,
           reporter: issue.fields.reporter?.displayName || 'Unknown',
           status: issue.fields.status?.name || 'Open',
@@ -313,6 +315,8 @@ export function App() {
 
           {/* Weekly Indicators KPI Bar */}
           <WeeklyIndicators tickets={areaFilteredTickets} onSelectBox={handleBoxClick} baseJql={areaBaseJql} />
+
+          <NodesSummary tickets={areaFilteredTickets} onSelectBox={handleBoxClick} baseJql={areaBaseJql} />
 
           {/* Periodic Hygiene Component */}
           {showHygiene && (
