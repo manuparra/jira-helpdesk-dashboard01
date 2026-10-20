@@ -36,6 +36,21 @@
   --glass-backdrop: blur(16px);
 }
 
+[data-theme='light'] {
+  --bg-dark: #edf3fa;
+  --bg-card: rgba(255, 255, 255, 0.88);
+  --bg-card-hover: rgba(255, 255, 255, 1);
+  --bg-input: #ffffff;
+  --border-color: rgba(15, 23, 42, 0.14);
+  --border-highlight: rgba(2, 132, 199, 0.32);
+  --text-main: #172033;
+  --text-muted: #526176;
+  --text-dim: #6b7a91;
+  --accent-cyan: #047e9b;
+  --accent-blue: #2563eb;
+  --shadow-glow: 0 0 20px rgba(2, 132, 199, 0.12);
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -54,6 +69,73 @@ body {
   min-height: 100vh;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+}
+
+[data-theme='light'] body {
+  background-image:
+    radial-gradient(circle at 15% 15%, rgba(59, 130, 246, 0.11) 0%, transparent 40%),
+    radial-gradient(circle at 85% 85%, rgba(139, 92, 246, 0.09) 0%, transparent 40%);
+}
+
+.theme-toggle {
+  padding: 8px 12px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-main);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.area-filter {
+  margin-bottom: 24px;
+  padding: 16px 20px;
+  display: grid;
+  grid-template-columns: minmax(180px, 0.8fr) minmax(300px, 1.4fr) minmax(220px, 1fr);
+  align-items: center;
+  gap: 18px;
+}
+
+.area-filter label {
+  display: block;
+  color: var(--text-main);
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.filter-eyebrow {
+  display: block;
+  color: var(--accent-cyan);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.area-filter select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border-highlight);
+  border-radius: 9px;
+  background: var(--bg-input);
+  color: var(--text-main);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.area-filter p {
+  color: var(--text-muted);
+  font-size: 0.84rem;
+}
+
+.area-filter strong { color: var(--text-main); }
+
+@media (max-width: 760px) {
+  .area-filter { grid-template-columns: 1fr; gap: 10px; }
 }
 
 button, input, select, textarea {

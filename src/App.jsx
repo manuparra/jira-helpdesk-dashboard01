@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { 
-  Server, RefreshCw, LogOut, AlertTriangle, Search, Grid, Table as TableIcon
+  Server, RefreshCw, LogOut, AlertTriangle, Search, Grid, Table as TableIcon, Moon, Sun
 } from 'lucide-react';
 import { TokenModal } from './TokenModal';
 import { WeeklyIndicators } from './WeeklyIndicators';
@@ -9,6 +9,7 @@ import { DashboardGrid } from './DashboardGrid';
 import { TicketTable } from './TicketTable';
 import { TicketModal } from './TicketModal';
 import { MOCK_SNH_TICKETS } from './mockData';
+import { AREAS, countActiveTicketsForArea, ticketHasArea } from './areas';
 
 export function App() {
   const [authConfig, setAuthConfig] = useState(null);
@@ -18,11 +19,18 @@ export function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showHygiene, setShowHygiene] = useState(false);
   const [viewMode, setViewMode] = useState('boxes'); // 'boxes' | 'table'
+  const [selectedArea, setSelectedArea] = useState('Operations');
+  const [theme, setTheme] = useState(() => localStorage.getItem('dashboard-theme') || 'dark');
 
   // Modal State for Box Click
   const [selectedBoxTitle, setSelectedBoxTitle] = useState(null);
   const [selectedBoxTickets, setSelectedBoxTickets] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem('dashboard-theme', theme);
+  }, [theme]);
 
   // Initialize data on auth connect
   const handleConnect = async (config) => {
@@ -67,6 +75,7 @@ export function App() {
           key: issue.key,
           summary: issue.fields.summary,
           areaNode: issue.fields.components?.[0]?.name || issue.fields.customfield_10000 || 'General SRC',
+          areas: issue.fields.components?.map(component => component.name) || [],
           assignee: issue.fields.assignee ? issue.fields.assignee.displayName : null,
           reporter: issue.fields.reporter?.displayName || 'Unknown',
           status: issue.fields.status?.name || 'Open',
@@ -131,8 +140,13 @@ export function App() {
     setIsModalOpen(true);
   };
 
-  // Filtered tickets by search query
-  const searchFilteredTickets = tickets.filter(t => {
+  const areaFilteredTickets = useMemo(
+    () => tickets.filter(ticket => ticketHasArea(ticket, selectedArea)),
+    [tickets, selectedArea]
+  );
+
+  // The selected area is applied before optional text search.
+  const searchFilteredTickets = areaFilteredTickets.filter(t => {
     if (!searchQuery) return true;
     const q = searchQuery.toLowerCase();
     return (
@@ -167,7 +181,7 @@ export function App() {
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <h1 style={{ fontSize: '1.4rem', fontWeight: 700, color: '#fff', letterSpacing: '-0.02em' }}>
+              <h1 style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
                 SKA Science Regional Centre Helpdesk Review
               </h1>
               <span className="badge badge-cyan">SNH Project</span>
@@ -181,13 +195,23 @@ export function App() {
         {authConfig && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <button
+              onClick={() => setTheme(currentTheme => currentTheme === 'dark' ? 'light' : 'dark')}
+              title={theme === 'dark' ? 'Switch to day mode' : 'Switch to night mode'}
+              aria-label={theme === 'dark' ? 'Switch to day mode' : 'Switch to night mode'}
+              className="theme-toggle"
+            >
+              {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+              {theme === 'dark' ? 'Day mode' : 'Night mode'}
+            </button>
+
+            <button
               onClick={() => setShowHygiene(!showHygiene)}
               style={{
                 padding: '8px 16px',
                 background: showHygiene ? 'rgba(139, 92, 246, 0.25)' : 'rgba(255,255,255,0.06)',
                 border: '1px solid rgba(139, 92, 246, 0.4)',
                 borderRadius: '8px',
-                color: '#fff',
+                color: 'var(--text-main)',
                 fontSize: '0.85rem',
                 fontWeight: 600,
                 cursor: 'pointer',
@@ -245,12 +269,33 @@ export function App() {
             </div>
           )}
 
+          {/* Primary dashboard filter: counts are all active (not Resolved/Closed) tickets. */}
+          <section className="area-filter glass-panel">
+            <div>
+              <span className="filter-eyebrow">Primary filter</span>
+              <label htmlFor="area-filter">Area</label>
+            </div>
+            <select
+              id="area-filter"
+              value={selectedArea}
+              onChange={(event) => setSelectedArea(event.target.value)}
+              aria-label="Filter dashboard by area"
+            >
+              {AREAS.map(area => (
+                <option key={area} value={area}>
+                  {area} ({countActiveTicketsForArea(tickets, area)})
+                </option>
+              ))}
+            </select>
+            <p>All dashboard metrics and ticket lists below are filtered to <strong>{selectedArea}</strong>.</p>
+          </section>
+
           {/* Weekly Indicators KPI Bar */}
-          <WeeklyIndicators tickets={tickets} />
+          <WeeklyIndicators tickets={areaFilteredTickets} />
 
           {/* Periodic Hygiene Component */}
           {showHygiene && (
-            <PeriodicHygiene tickets={tickets} onHygieneAction={handleHygieneAction} />
+            <PeriodicHygiene tickets={areaFilteredTickets} onHygieneAction={handleHygieneAction} />
           )}
 
           {/* Search & View Mode Switcher */}
@@ -274,7 +319,7 @@ export function App() {
                   background: 'var(--bg-input)',
                   border: '1px solid var(--border-color)',
                   borderRadius: '10px',
-                  color: '#fff',
+                  color: 'var(--text-main)',
                   fontSize: '0.85rem'
                 }}
               />

@@ -248,13 +248,13 @@ export function DashboardGrid({ tickets, onSelectBox }) {
               <span style={{
                 fontSize: '1.75rem',
                 fontWeight: 800,
-                color: '#fff',
+                color: 'var(--text-main)',
                 fontFamily: 'var(--font-mono)'
               }}>
                 {box.tickets.length}
               </span>
             </div>
-            <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#fff', margin: '0 0 4px 0', lineHeight: 1.2 }}>
+            <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-main)', margin: '0 0 4px 0', lineHeight: 1.2 }}>
               {box.title}
             </h4>
             <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: 0 }}>
@@ -285,7 +285,7 @@ export function DashboardGrid({ tickets, onSelectBox }) {
       {/* 1. Core Review Focus Areas */}
       <div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-          <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#fff', margin: 0 }}>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>
             Core Review Categories
           </h3>
           <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>• Click any box to inspect list</span>
@@ -296,7 +296,7 @@ export function DashboardGrid({ tickets, onSelectBox }) {
       {/* 2. Status & Ageing Timelines */}
       <div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-          <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#fff', margin: 0 }}>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>
             Status & Ageing Timelines
           </h3>
           <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>• Active, Overdues, 5d, 15d, 30d+, Pending Close</span>
@@ -307,7 +307,7 @@ export function DashboardGrid({ tickets, onSelectBox }) {
       {/* 3. Breakdown by Key Area */}
       <div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-          <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#fff', margin: 0 }}>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>
             Tickets by Key Area / Node
           </h3>
         </div>
@@ -317,7 +317,7 @@ export function DashboardGrid({ tickets, onSelectBox }) {
       {/* 4. Breakdown by Assignee */}
       <div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-          <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#fff', margin: 0 }}>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>
             Tickets by Assignee
           </h3>
         </div>

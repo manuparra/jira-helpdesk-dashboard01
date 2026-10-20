@@ -90,7 +90,7 @@ export function WeeklyIndicators({ tickets }) {
             </div>
           </div>
           <div>
-            <div style={{ fontSize: '2.2rem', fontWeight: 700, color: '#fff', lineHeight: 1 }}>
+            <div style={{ fontSize: '2.2rem', fontWeight: 700, color: 'var(--text-main)', lineHeight: 1 }}>
               {kpi.value}
             </div>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginTop: '6px' }}>
