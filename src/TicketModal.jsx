@@ -1,8 +1,12 @@
 import React from 'react';
-import { X, ExternalLink, Calendar, User, Tag, Clock, ShieldAlert, AlertTriangle } from 'lucide-react';
+import { X, ExternalLink, User, Tag, Clock, Copy } from 'lucide-react';
 
-export function TicketModal({ isOpen, onClose, title, tickets, jiraUrl }) {
+export function TicketModal({ isOpen, onClose, title, tickets, jiraUrl, jql, jqlNote }) {
   if (!isOpen) return null;
+
+  const copyJql = async () => {
+    await navigator.clipboard?.writeText(jql);
+  };
 
   const calculateWaitTime = (createdStr) => {
     if (!createdStr) return 'N/A';
@@ -12,12 +16,6 @@ export function TicketModal({ isOpen, onClose, title, tickets, jiraUrl }) {
     const diffDays = Math.floor(diffHours / 24);
     if (diffDays > 0) return `${diffDays}d ${diffHours % 24}h`;
     return `${diffHours}h`;
-  };
-
-  const formatDate = (dateStr) => {
-    if (!dateStr) return 'N/A';
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
   };
 
   return (
@@ -91,6 +89,16 @@ export function TicketModal({ isOpen, onClose, title, tickets, jiraUrl }) {
 
         {/* Modal Body / Table */}
         <div style={{ padding: '20px', overflowY: 'auto', flex: 1 }}>
+          <section className="jql-debug" aria-label="JIRA query used for this card">
+            <div>
+              <span>JIRA query</span>
+              <code>{jql}</code>
+              {jqlNote && <p>{jqlNote}</p>}
+            </div>
+            <button onClick={copyJql} title="Copy JQL" aria-label="Copy JQL">
+              <Copy size={15} /> Copy
+            </button>
+          </section>
           {tickets.length === 0 ? (
             <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
               No tickets found for this category.

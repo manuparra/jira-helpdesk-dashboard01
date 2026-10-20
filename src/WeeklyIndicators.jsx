@@ -1,8 +1,9 @@
 import React from 'react';
 import { Activity, UserX, AlertOctagon, Flame, Archive, ChevronRight } from 'lucide-react';
 import { isActiveTicket, isOwnerlessTicket } from './areas';
+import { addJqlClause } from './jql';
 
-export function WeeklyIndicators({ tickets, onSelectBox }) {
+export function WeeklyIndicators({ tickets, onSelectBox, baseJql }) {
   const activeTickets = tickets.filter(isActiveTicket);
   const ownerlessTickets = tickets.filter(isOwnerlessTicket);
   
@@ -29,6 +30,7 @@ export function WeeklyIndicators({ tickets, onSelectBox }) {
       value: activeTickets.length,
       sub: 'Open & In-Progress SNH Tickets',
       tickets: activeTickets,
+      jql: addJqlClause(baseJql, 'status NOT IN (Resolved, Closed)'),
       icon: <Activity size={22} color="#00f0ff" />,
       borderColor: 'rgba(0, 240, 255, 0.3)',
       bg: 'rgba(0, 240, 255, 0.05)'
@@ -38,6 +40,7 @@ export function WeeklyIndicators({ tickets, onSelectBox }) {
       value: ownerlessTickets.length,
       sub: 'Unassigned Tickets Pending Lead',
       tickets: ownerlessTickets,
+      jql: addJqlClause(baseJql, 'assignee IS EMPTY AND status NOT IN (Resolved, Closed)'),
       icon: <UserX size={22} color="#ef4444" />,
       borderColor: 'rgba(239, 68, 68, 0.3)',
       bg: 'rgba(239, 68, 68, 0.05)'
@@ -47,6 +50,8 @@ export function WeeklyIndicators({ tickets, onSelectBox }) {
       value: overdueActions,
       sub: 'Passed Review Target Date',
       tickets: tickets.filter(t => t.reviewDate && t.reviewDate < todayStr && t.status !== 'Closed'),
+      jql: addJqlClause(baseJql),
+      jqlNote: 'The review target is a dashboard-only date. JIRA supplies the selected area tickets; the overdue comparison is then calculated in the dashboard.',
       icon: <AlertOctagon size={22} color="#f59e0b" />,
       borderColor: 'rgba(245, 158, 11, 0.3)',
       bg: 'rgba(245, 158, 11, 0.05)'
@@ -61,6 +66,7 @@ export function WeeklyIndicators({ tickets, onSelectBox }) {
         const updatedDate = new Date(t.updated || t.created);
         return isHigh && (now - updatedDate) / (1000 * 3600 * 24) >= 7;
       }),
+      jql: addJqlClause(baseJql, 'priority IN (High, Highest) AND updated <= -7d AND status NOT IN (Resolved, Closed)'),
       icon: <Flame size={22} color="#ec4899" />,
       borderColor: 'rgba(236, 72, 153, 0.3)',
       bg: 'rgba(236, 72, 153, 0.05)'
@@ -70,6 +76,7 @@ export function WeeklyIndicators({ tickets, onSelectBox }) {
       value: pendingClosure,
       sub: 'Resolved / Hygiene Sweep',
       tickets: tickets.filter(t => t.pendingClosure || t.status === 'Resolved' || t.status === 'Pending Closure'),
+      jql: addJqlClause(baseJql, 'status = Resolved'),
       icon: <Archive size={22} color="#10b981" />,
       borderColor: 'rgba(16, 185, 129, 0.3)',
       bg: 'rgba(16, 185, 129, 0.05)'
@@ -89,9 +96,9 @@ export function WeeklyIndicators({ tickets, onSelectBox }) {
           className="glass-panel"
           role="button"
           tabIndex={0}
-          onClick={() => onSelectBox(kpi.title, kpi.tickets)}
+          onClick={() => onSelectBox(kpi.title, kpi.tickets, kpi.jql, kpi.jqlNote)}
           onKeyDown={(event) => {
-            if (event.key === 'Enter' || event.key === ' ') onSelectBox(kpi.title, kpi.tickets);
+            if (event.key === 'Enter' || event.key === ' ') onSelectBox(kpi.title, kpi.tickets, kpi.jql, kpi.jqlNote);
           }}
           style={{
           padding: '20px',
@@ -122,7 +129,7 @@ export function WeeklyIndicators({ tickets, onSelectBox }) {
             className="view-tickets-link"
             onClick={(event) => {
               event.stopPropagation();
-              onSelectBox(kpi.title, kpi.tickets);
+              onSelectBox(kpi.title, kpi.tickets, kpi.jql, kpi.jqlNote);
             }}
           >
             View Tickets <ChevronRight size={14} />

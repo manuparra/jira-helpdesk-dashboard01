@@ -5,8 +5,9 @@ import {
   CheckCircle2, MessageSquare, ChevronRight
 } from 'lucide-react';
 import { isOwnerlessTicket } from './areas';
+import { addJqlClause, jqlString } from './jql';
 
-export function DashboardGrid({ tickets, onSelectBox }) {
+export function DashboardGrid({ tickets, onSelectBox, baseJql }) {
   const now = new Date();
   const todayStr = now.toISOString().split('T')[0];
 
@@ -24,6 +25,7 @@ export function DashboardGrid({ tickets, onSelectBox }) {
       title: 'Unassigned',
       subtitle: 'Open tickets needing lead assignment',
       tickets: tickets.filter(isOwnerlessTicket),
+      jql: addJqlClause(baseJql, 'assignee IS EMPTY AND status NOT IN (Resolved, Closed)'),
       icon: <UserX size={20} color="#ef4444" />,
       color: '#ef4444',
       bg: 'rgba(239, 68, 68, 0.08)'
@@ -33,6 +35,7 @@ export function DashboardGrid({ tickets, onSelectBox }) {
       title: 'Acceptance Pending',
       subtitle: 'Waiting for user/requester confirmation',
       tickets: tickets.filter(t => t.acceptancePending || t.status === 'Waiting for customer' || t.status === 'Pending User Acceptance'),
+      jql: addJqlClause(baseJql, 'status = "Waiting for customer"'),
       icon: <Clock size={20} color="#f59e0b" />,
       color: '#f59e0b',
       bg: 'rgba(245, 158, 11, 0.08)'
@@ -42,6 +45,7 @@ export function DashboardGrid({ tickets, onSelectBox }) {
       title: 'High Impact / Priority',
       subtitle: 'Critical & highest priority issues',
       tickets: tickets.filter(t => t.impact === 'High Impact' || t.priority === 'Highest' || t.priority === 'High'),
+      jql: addJqlClause(baseJql, 'priority IN (High, Highest)'),
       icon: <AlertCircle size={20} color="#ec4899" />,
       color: '#ec4899',
       bg: 'rgba(236, 72, 153, 0.08)'
@@ -51,6 +55,7 @@ export function DashboardGrid({ tickets, onSelectBox }) {
       title: 'Inactivity / Ageing (>3d)',
       subtitle: 'No updates for over 3 days',
       tickets: tickets.filter(t => getDaysDiff(t.updated || t.created) >= 3 && t.status !== 'Closed'),
+      jql: addJqlClause(baseJql, 'updated <= -3d AND status != Closed'),
       icon: <Clock size={20} color="#8b5cf6" />,
       color: '#8b5cf6',
       bg: 'rgba(139, 92, 246, 0.08)'
@@ -60,6 +65,7 @@ export function DashboardGrid({ tickets, onSelectBox }) {
       title: 'Blockers / Pending',
       subtitle: 'Flagged blockers & critical path holds',
       tickets: tickets.filter(t => t.isBlocker || t.priority === 'Highest'),
+      jql: addJqlClause(baseJql, 'priority = Highest'),
       icon: <ShieldAlert size={20} color="#dc2626" />,
       color: '#dc2626',
       bg: 'rgba(220, 38, 38, 0.08)'
@@ -69,6 +75,7 @@ export function DashboardGrid({ tickets, onSelectBox }) {
       title: 'Cross-Node / All',
       subtitle: 'Inter-SRC & cross-functional tickets',
       tickets: tickets.filter(t => t.isCrossNode),
+      jql: addJqlClause(baseJql, 'labels = cross-node'),
       icon: <GitBranch size={20} color="#06b6d4" />,
       color: '#06b6d4',
       bg: 'rgba(6, 182, 212, 0.08)'
@@ -78,6 +85,7 @@ export function DashboardGrid({ tickets, onSelectBox }) {
       title: 'Closure Candidates',
       subtitle: 'Resolved tickets ready for final sweep',
       tickets: tickets.filter(t => t.pendingClosure || t.status === 'Resolved'),
+      jql: addJqlClause(baseJql, 'status = Resolved'),
       icon: <CheckSquare size={20} color="#10b981" />,
       color: '#10b981',
       bg: 'rgba(16, 185, 129, 0.08)'
@@ -87,6 +95,7 @@ export function DashboardGrid({ tickets, onSelectBox }) {
       title: 'All Active Tickets',
       subtitle: 'Complete list of non-closed tickets',
       tickets: tickets.filter(t => t.status !== 'Closed'),
+      jql: addJqlClause(baseJql, 'status != Closed'),
       icon: <Layers size={20} color="#00f0ff" />,
       color: '#00f0ff',
       bg: 'rgba(0, 240, 255, 0.08)'
@@ -100,6 +109,7 @@ export function DashboardGrid({ tickets, onSelectBox }) {
       title: 'Active Tickets',
       subtitle: 'Open & In-Progress status',
       tickets: tickets.filter(t => t.status === 'Open' || t.status === 'In Progress'),
+      jql: addJqlClause(baseJql, 'status IN (Open, "In Progress")'),
       icon: <CheckCircle2 size={20} color="#3b82f6" />,
       color: '#3b82f6',
       bg: 'rgba(59, 130, 246, 0.08)'
@@ -109,6 +119,8 @@ export function DashboardGrid({ tickets, onSelectBox }) {
       title: 'Overdue Actions',
       subtitle: 'Passed planned duty review date',
       tickets: tickets.filter(t => t.reviewDate && t.reviewDate < todayStr && t.status !== 'Closed'),
+      jql: addJqlClause(baseJql),
+      jqlNote: 'The review target is maintained by the dashboard. The overdue comparison is applied after JIRA returns the selected area tickets.',
       icon: <AlertTriangle size={20} color="#f97316" />,
       color: '#f97316',
       bg: 'rgba(249, 115, 22, 0.08)'
@@ -121,6 +133,7 @@ export function DashboardGrid({ tickets, onSelectBox }) {
         const days = getDaysDiff(t.created);
         return days >= 5 && days < 15 && t.status !== 'Closed';
       }),
+      jql: addJqlClause(baseJql, 'created >= -14d AND created < -5d AND status != Closed'),
       icon: <Clock size={20} color="#a855f7" />,
       color: '#a855f7',
       bg: 'rgba(168, 85, 247, 0.08)'
@@ -133,6 +146,7 @@ export function DashboardGrid({ tickets, onSelectBox }) {
         const days = getDaysDiff(t.created);
         return days >= 15 && days < 30 && t.status !== 'Closed';
       }),
+      jql: addJqlClause(baseJql, 'created >= -29d AND created < -15d AND status != Closed'),
       icon: <Clock size={20} color="#e11d48" />,
       color: '#e11d48',
       bg: 'rgba(225, 29, 72, 0.08)'
@@ -142,6 +156,7 @@ export function DashboardGrid({ tickets, onSelectBox }) {
       title: '30+ Days Old',
       subtitle: 'Stalled tickets active >30 days',
       tickets: tickets.filter(t => getDaysDiff(t.created) >= 30 && t.status !== 'Closed'),
+      jql: addJqlClause(baseJql, 'created <= -30d AND status != Closed'),
       icon: <AlertCircle size={20} color="#be123c" />,
       color: '#be123c',
       bg: 'rgba(190, 18, 60, 0.08)'
@@ -151,6 +166,7 @@ export function DashboardGrid({ tickets, onSelectBox }) {
       title: 'Waiting for Customer',
       subtitle: 'Awaiting user response or feedback',
       tickets: tickets.filter(t => t.status === 'Waiting for customer' || t.acceptancePending),
+      jql: addJqlClause(baseJql, 'status = "Waiting for customer"'),
       icon: <MessageSquare size={20} color="#06b6d4" />,
       color: '#06b6d4',
       bg: 'rgba(6, 182, 212, 0.08)'
@@ -160,6 +176,7 @@ export function DashboardGrid({ tickets, onSelectBox }) {
       title: 'Pending to Close',
       subtitle: 'Resolved tickets awaiting verification',
       tickets: tickets.filter(t => t.pendingClosure || t.status === 'Resolved'),
+      jql: addJqlClause(baseJql, 'status = Resolved'),
       icon: <CheckSquare size={20} color="#10b981" />,
       color: '#10b981',
       bg: 'rgba(16, 185, 129, 0.08)'
@@ -178,6 +195,7 @@ export function DashboardGrid({ tickets, onSelectBox }) {
     title: area,
     subtitle: `Key Area • ${keyAreasMap[area].length} Ticket(s)`,
     tickets: keyAreasMap[area],
+    jql: addJqlClause(baseJql),
     icon: <Folder size={20} color="#00f0ff" />,
     color: '#00f0ff',
     bg: 'rgba(0, 240, 255, 0.06)'
@@ -195,6 +213,7 @@ export function DashboardGrid({ tickets, onSelectBox }) {
     title: owner,
     subtitle: owner === 'Unassigned' ? 'Unassigned Queue' : `Assigned Workload`,
     tickets: assigneeMap[owner],
+    jql: addJqlClause(baseJql, owner === 'Unassigned' ? 'assignee IS EMPTY' : `assignee = ${jqlString(owner)}`),
     icon: <UserCheck size={20} color={owner === 'Unassigned' ? '#ef4444' : '#3b82f6'} />,
     color: owner === 'Unassigned' ? '#ef4444' : '#3b82f6',
     bg: owner === 'Unassigned' ? 'rgba(239, 68, 68, 0.06)' : 'rgba(59, 130, 246, 0.06)'
@@ -209,11 +228,11 @@ export function DashboardGrid({ tickets, onSelectBox }) {
       {boxes.map(box => (
         <div
           key={box.id}
-          onClick={() => onSelectBox(box.title, box.tickets)}
+          onClick={() => onSelectBox(box.title, box.tickets, box.jql, box.jqlNote)}
           role="button"
           tabIndex={0}
           onKeyDown={(event) => {
-            if (event.key === 'Enter' || event.key === ' ') onSelectBox(box.title, box.tickets);
+            if (event.key === 'Enter' || event.key === ' ') onSelectBox(box.title, box.tickets, box.jql, box.jqlNote);
           }}
           className="glass-panel"
           style={{
@@ -273,7 +292,7 @@ export function DashboardGrid({ tickets, onSelectBox }) {
             style={{ color: box.color }}
             onClick={(event) => {
               event.stopPropagation();
-              onSelectBox(box.title, box.tickets);
+              onSelectBox(box.title, box.tickets, box.jql, box.jqlNote);
             }}
           >
             View Tickets <ChevronRight size={14} />

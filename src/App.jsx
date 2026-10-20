@@ -10,6 +10,7 @@ import { TicketTable } from './TicketTable';
 import { TicketModal } from './TicketModal';
 import { MOCK_SNH_TICKETS } from './mockData';
 import { AREAS, countActiveTicketsForArea, ticketHasArea } from './areas';
+import { jqlString } from './jql';
 
 export function App() {
   const [authConfig, setAuthConfig] = useState(null);
@@ -25,6 +26,8 @@ export function App() {
   // Modal State for Box Click
   const [selectedBoxTitle, setSelectedBoxTitle] = useState(null);
   const [selectedBoxTickets, setSelectedBoxTickets] = useState([]);
+  const [selectedBoxJql, setSelectedBoxJql] = useState('');
+  const [selectedBoxJqlNote, setSelectedBoxJqlNote] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
@@ -145,11 +148,18 @@ export function App() {
     }));
   };
 
-  const handleBoxClick = (boxTitle, boxTickets) => {
+  const handleBoxClick = (boxTitle, boxTickets, jql, jqlNote = '') => {
     setSelectedBoxTitle(boxTitle);
     setSelectedBoxTickets(boxTickets);
+    setSelectedBoxJql(jql);
+    setSelectedBoxJqlNote(jqlNote);
     setIsModalOpen(true);
   };
+
+  const areaBaseJql = useMemo(() => {
+    const projectKey = authConfig?.projectKey || 'SNH';
+    return `project = ${jqlString(projectKey)} AND "Area" = ${jqlString(selectedArea)}`;
+  }, [authConfig?.projectKey, selectedArea]);
 
   const areaFilteredTickets = useMemo(
     () => tickets.filter(ticket => ticketHasArea(ticket, selectedArea)),
@@ -302,7 +312,7 @@ export function App() {
           </section>
 
           {/* Weekly Indicators KPI Bar */}
-          <WeeklyIndicators tickets={areaFilteredTickets} onSelectBox={handleBoxClick} />
+          <WeeklyIndicators tickets={areaFilteredTickets} onSelectBox={handleBoxClick} baseJql={areaBaseJql} />
 
           {/* Periodic Hygiene Component */}
           {showHygiene && (
@@ -381,7 +391,8 @@ export function App() {
           {viewMode === 'boxes' ? (
             <DashboardGrid 
               tickets={searchFilteredTickets} 
-              onSelectBox={handleBoxClick} 
+              onSelectBox={handleBoxClick}
+              baseJql={areaBaseJql}
             />
           ) : (
             <TicketTable 
@@ -398,6 +409,8 @@ export function App() {
             title={selectedBoxTitle}
             tickets={selectedBoxTickets}
             jiraUrl={authConfig.jiraUrl}
+            jql={selectedBoxJql}
+            jqlNote={selectedBoxJqlNote}
           />
         </>
       )}

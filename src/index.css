@@ -154,6 +154,58 @@ body {
   text-decoration: underline;
 }
 
+.jql-debug {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-highlight);
+  border-radius: 9px;
+  background: var(--bg-input);
+}
+
+.jql-debug span {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--text-muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.jql-debug code {
+  color: var(--text-main);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  overflow-wrap: anywhere;
+}
+
+.jql-debug p {
+  margin-top: 7px;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.jql-debug button {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--accent-cyan);
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+
+@media (max-width: 600px) {
+  .jql-debug { flex-direction: column; }
+}
+
 @media (max-width: 760px) {
   .area-filter { grid-template-columns: 1fr; gap: 10px; }
 }
