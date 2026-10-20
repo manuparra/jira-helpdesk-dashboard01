@@ -46,6 +46,10 @@ export function App() {
     } else {
       try {
         const jql = `project = "${config.projectKey}" ORDER BY updated DESC`;
+        const fields = [
+          'summary', 'components', 'customfield_17813', 'assignee', 'reporter',
+          'status', 'priority', 'created', 'updated', 'labels'
+        ].join(',');
         const headers = {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
@@ -58,9 +62,10 @@ export function App() {
         }
 
         const targetUrl = config.jiraUrl.replace(/\/$/, '');
+        const query = `jql=${encodeURIComponent(jql)}&fields=${encodeURIComponent(fields)}&maxResults=1000`;
         const endpoint = targetUrl.includes('jira.skatelescope.org')
-          ? `/jira-api/rest/api/2/search?jql=${encodeURIComponent(jql)}`
-          : `${targetUrl}/rest/api/2/search?jql=${encodeURIComponent(jql)}`;
+          ? `/jira-api/rest/api/2/search?${query}`
+          : `${targetUrl}/rest/api/2/search?${query}`;
 
         const res = await fetch(endpoint, { method: 'GET', headers });
 
@@ -70,12 +75,17 @@ export function App() {
 
         const data = await res.json();
         
-        const formatted = (data.issues || []).map(issue => ({
+        const formatted = (data.issues || []).map(issue => {
+          // "Area" is the SRCNet JIRA custom field customfield_17813, not a component.
+          const area = issue.fields.customfield_17813?.value || 'Unassigned';
+
+          return {
           id: issue.id,
           key: issue.key,
           summary: issue.fields.summary,
-          areaNode: issue.fields.components?.[0]?.name || issue.fields.customfield_10000 || 'General SRC',
-          areas: issue.fields.components?.map(component => component.name) || [],
+          area,
+          areaNode: area,
+          areas: [area],
           assignee: issue.fields.assignee ? issue.fields.assignee.displayName : null,
           reporter: issue.fields.reporter?.displayName || 'Unknown',
           status: issue.fields.status?.name || 'Open',
@@ -90,7 +100,8 @@ export function App() {
           isBlocker: issue.fields.priority?.name === 'Highest',
           pendingClosure: issue.fields.status?.name === 'Resolved',
           acceptancePending: issue.fields.status?.name === 'Waiting for customer'
-        }));
+        };
+        });
 
         setTickets(formatted);
       } catch (err) {
