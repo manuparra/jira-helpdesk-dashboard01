@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
-  Server, Shield, RefreshCw, LogOut, CheckCircle2, AlertTriangle, 
-  ExternalLink, Layers, Search, Filter
+  Server, RefreshCw, LogOut, AlertTriangle, Search, Grid, Table as TableIcon
 } from 'lucide-react';
 import { TokenModal } from './TokenModal';
 import { WeeklyIndicators } from './WeeklyIndicators';
-import { ReviewFilters } from './ReviewFilters';
-import { TicketTable } from './TicketTable';
 import { PeriodicHygiene } from './PeriodicHygiene';
+import { DashboardGrid } from './DashboardGrid';
+import { TicketTable } from './TicketTable';
+import { TicketModal } from './TicketModal';
 import { MOCK_SNH_TICKETS } from './mockData';
 
 export function App() {
@@ -15,9 +15,14 @@ export function App() {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [activeFilter, setActiveFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showHygiene, setShowHygiene] = useState(false);
+  const [viewMode, setViewMode] = useState('boxes'); // 'boxes' | 'table'
+
+  // Modal State for Box Click
+  const [selectedBoxTitle, setSelectedBoxTitle] = useState(null);
+  const [selectedBoxTickets, setSelectedBoxTickets] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Initialize data on auth connect
   const handleConnect = async (config) => {
@@ -26,13 +31,11 @@ export function App() {
     setAuthConfig(config);
 
     if (config.isMock) {
-      // Load SKA SNH Mock dataset
       setTimeout(() => {
         setTickets(MOCK_SNH_TICKETS);
         setLoading(false);
-      }, 600);
+      }, 500);
     } else {
-      // Real API fetch attempt via proxy/direct fetch
       try {
         const jql = `project = "${config.projectKey}" ORDER BY updated DESC`;
         const headers = {
@@ -46,10 +49,12 @@ export function App() {
           headers['Authorization'] = `Basic ${btoa(`${config.email}:${config.token}`)}`;
         }
 
-        const res = await fetch(`${config.jiraUrl}/rest/api/2/search?jql=${encodeURIComponent(jql)}`, {
-          method: 'GET',
-          headers
-        });
+        const targetUrl = config.jiraUrl.replace(/\/$/, '');
+        const endpoint = targetUrl.includes('jira.skatelescope.org')
+          ? `/jira-api/rest/api/2/search?jql=${encodeURIComponent(jql)}`
+          : `${targetUrl}/rest/api/2/search?jql=${encodeURIComponent(jql)}`;
+
+        const res = await fetch(endpoint, { method: 'GET', headers });
 
         if (!res.ok) {
           throw new Error(`JIRA API responded with HTTP ${res.status}: ${res.statusText}`);
@@ -57,7 +62,6 @@ export function App() {
 
         const data = await res.json();
         
-        // Transform Jira REST issue response into app model
         const formatted = (data.issues || []).map(issue => ({
           id: issue.id,
           key: issue.key,
@@ -81,7 +85,7 @@ export function App() {
 
         setTickets(formatted);
       } catch (err) {
-        console.warn('Real JIRA connection error/CORS restriction. Falling back to SNH workspace data.', err);
+        console.warn('Real JIRA connection fallback to mock SNH dataset.', err);
         setError(`Failed to fetch from live JIRA (${err.message}). Loaded SKA SNH project data.`);
         setTickets(MOCK_SNH_TICKETS);
       } finally {
@@ -121,48 +125,22 @@ export function App() {
     }));
   };
 
-  // Filter calculation
-  const now = new Date();
-  const todayStr = now.toISOString().split('T')[0];
-
-  const filterCounts = {
-    all: tickets.length,
-    unassigned: tickets.filter(t => !t.assignee && t.status !== 'Closed').length,
-    acceptance_pending: tickets.filter(t => t.acceptancePending || t.status === 'Pending User Acceptance').length,
-    high_impact: tickets.filter(t => t.impact === 'High Impact' || t.priority === 'Highest').length,
-    inactivity: tickets.filter(t => {
-      const updated = new Date(t.updated || t.created);
-      return ((now - updated) / (1000 * 3600 * 24)) >= 3 && t.status !== 'Closed';
-    }).length,
-    blockers: tickets.filter(t => t.isBlocker || t.priority === 'Highest').length,
-    cross_node: tickets.filter(t => t.isCrossNode).length,
-    closure_candidates: tickets.filter(t => t.pendingClosure || t.status === 'Resolved').length
+  const handleBoxClick = (boxTitle, boxTickets) => {
+    setSelectedBoxTitle(boxTitle);
+    setSelectedBoxTickets(boxTickets);
+    setIsModalOpen(true);
   };
 
-  const filteredTickets = tickets.filter(t => {
-    // Search matching
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      const matchKey = t.key.toLowerCase().includes(q);
-      const matchSummary = t.summary.toLowerCase().includes(q);
-      const matchArea = (t.areaNode || '').toLowerCase().includes(q);
-      const matchOwner = (t.assignee || '').toLowerCase().includes(q);
-      if (!matchKey && !matchSummary && !matchArea && !matchOwner) return false;
-    }
-
-    // Filter tab logic
-    if (activeFilter === 'unassigned') return !t.assignee && t.status !== 'Closed';
-    if (activeFilter === 'acceptance_pending') return t.acceptancePending || t.status === 'Pending User Acceptance';
-    if (activeFilter === 'high_impact') return t.impact === 'High Impact' || t.priority === 'Highest';
-    if (activeFilter === 'inactivity') {
-      const updated = new Date(t.updated || t.created);
-      return ((now - updated) / (1000 * 3600 * 24)) >= 3 && t.status !== 'Closed';
-    }
-    if (activeFilter === 'blockers') return t.isBlocker || t.priority === 'Highest';
-    if (activeFilter === 'cross_node') return t.isCrossNode;
-    if (activeFilter === 'closure_candidates') return t.pendingClosure || t.status === 'Resolved';
-
-    return true;
+  // Filtered tickets by search query
+  const searchFilteredTickets = tickets.filter(t => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      t.key.toLowerCase().includes(q) ||
+      t.summary.toLowerCase().includes(q) ||
+      (t.areaNode || '').toLowerCase().includes(q) ||
+      (t.assignee || '').toLowerCase().includes(q)
+    );
   });
 
   return (
@@ -270,26 +248,26 @@ export function App() {
           {/* Weekly Indicators KPI Bar */}
           <WeeklyIndicators tickets={tickets} />
 
-          {/* Periodic Hygiene Component (If toggled or active) */}
+          {/* Periodic Hygiene Component */}
           {showHygiene && (
             <PeriodicHygiene tickets={tickets} onHygieneAction={handleHygieneAction} />
           )}
 
-          {/* Search & Filter Toolbar */}
+          {/* Search & View Mode Switcher */}
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            marginBottom: '16px',
+            marginBottom: '24px',
             gap: '16px',
             flexWrap: 'wrap'
           }}>
-            <div style={{ position: 'relative', width: '320px' }}>
+            <div style={{ position: 'relative', width: '340px' }}>
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search ticket key, summary, area, owner..."
+                placeholder="Search ticket key, summary, area, assignee..."
                 style={{
                   width: '100%',
                   padding: '10px 14px 10px 38px',
@@ -303,23 +281,67 @@ export function App() {
               <Search size={16} style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--text-muted)' }} />
             </div>
 
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-              Showing <strong>{filteredTickets.length}</strong> of {tickets.length} tickets
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--bg-card)', padding: '4px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+              <button
+                onClick={() => setViewMode('boxes')}
+                style={{
+                  padding: '8px 14px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: viewMode === 'boxes' ? 'var(--accent-cyan)' : 'transparent',
+                  color: viewMode === 'boxes' ? '#000' : 'var(--text-muted)',
+                  fontWeight: 700,
+                  fontSize: '0.82rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <Grid size={15} /> Card Boxes View
+              </button>
+              <button
+                onClick={() => setViewMode('table')}
+                style={{
+                  padding: '8px 14px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: viewMode === 'table' ? 'var(--accent-cyan)' : 'transparent',
+                  color: viewMode === 'table' ? '#000' : 'var(--text-muted)',
+                  fontWeight: 700,
+                  fontSize: '0.82rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <TableIcon size={15} /> Full Table View
+              </button>
             </div>
           </div>
 
-          {/* Review Filters Tabs */}
-          <ReviewFilters 
-            currentFilter={activeFilter} 
-            onSelectFilter={setActiveFilter} 
-            counts={filterCounts} 
-          />
+          {/* Render Box Grid or Classic Table based on viewMode */}
+          {viewMode === 'boxes' ? (
+            <DashboardGrid 
+              tickets={searchFilteredTickets} 
+              onSelectBox={handleBoxClick} 
+            />
+          ) : (
+            <TicketTable 
+              tickets={searchFilteredTickets} 
+              jiraUrl={authConfig.jiraUrl} 
+              onUpdateTicketAction={handleUpdateTicketAction} 
+            />
+          )}
 
-          {/* Visible Ticket Fields Table */}
-          <TicketTable 
-            tickets={filteredTickets} 
-            jiraUrl={authConfig.jiraUrl} 
-            onUpdateTicketAction={handleUpdateTicketAction} 
+          {/* Modal for displaying box ticket list */}
+          <TicketModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            title={selectedBoxTitle}
+            tickets={selectedBoxTickets}
+            jiraUrl={authConfig.jiraUrl}
           />
         </>
       )}
@@ -328,3 +350,4 @@ export function App() {
 }
 
 export default App;
+

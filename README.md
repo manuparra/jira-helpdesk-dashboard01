@@ -1,16 +1,77 @@
-# React + Vite
+# SKA Science Regional Centre (SNH) Helpdesk Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A modern, high-performance web dashboard for reviewing SKA Science Regional Centre (SNH) Jira helpdesk tickets, managing daily duty exception lists, and executing monthly PI periodic hygiene sweeps.
 
-Currently, two official plugins are available:
+## Key Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Card Boxes View**: Categorized exception cards (Unassigned, Acceptance Pending, High Impact, Inactivity, Blockers, Cross-Node, Closure Candidates, Status/Ageing timelines, Key Areas, and Assignees).
+- **Interactive Ticket Modal**: Click on any box category to pop up a detailed ticket overlay with direct clickable links to Jira issues.
+- **Periodic Hygiene Sweep**: Built-in tools for monthly PI reviews (Retain, Close, Merge, Convert).
+- **Client-Side Auth Isolation**: User tokens are held purely in local memory state for maximum security and multi-user isolation.
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🐳 Docker Deployment
 
-## Expanding the Oxlint configuration
+### 1. Quick Start with Docker Compose
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+To build and run the containerized application on port `8080`:
+
+```bash
+docker-compose up -d --build
+```
+
+Access the dashboard in your browser at:  
+👉 **`http://localhost:8080`**
+
+To stop the container:
+```bash
+docker-compose down
+```
+
+### 2. Manual Docker Build & Run
+
+Build the Docker image using the multi-stage `Dockerfile`:
+
+```bash
+docker build -t jira-helpdesk-dashboard .
+```
+
+Run the container:
+
+```bash
+docker run -d -p 8080:80 --name jira_helpdesk_dashboard jira-helpdesk-dashboard
+```
+
+---
+
+## 🛠 Local Development
+
+### Prerequisites
+- Node.js 18+
+- npm
+
+### Setup
+
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+2. Start dev server:
+   ```bash
+   npm run dev
+   ```
+   Open `http://localhost:5173` in your browser.
+
+3. Run linter:
+   ```bash
+   npm run lint
+   ```
+
+---
+
+## 🔐 Security & Auth Model
+
+- **Memory-Only State**: Tokens and credentials entered into the login modal are stored exclusively in client-side React state.
+- **Isolated Sessions**: Multiple users accessing the same deployed URL will be prompted for their own individual credentials. No session tokens are persisted in `localStorage` or shared backend databases.

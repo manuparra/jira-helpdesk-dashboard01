@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  jira-dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: jira-helpdesk-dashboard:latest
+    container_name: jira_helpdesk_dashboard
+    ports:
+      - "8080:80"
+    restart: unless-stopped
