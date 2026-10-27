@@ -9,12 +9,13 @@ export function WeeklyIndicators({ tickets, onSelectBox, baseJql }) {
   
   // Overdue actions: reviewDate < today
   const todayStr = new Date().toISOString().split('T')[0];
-  const overdueActions = tickets.filter(t => t.reviewDate && t.reviewDate < todayStr && t.status !== 'Closed').length;
+  const overdueTickets = tickets.filter(t => isActiveTicket(t) && t.reviewDate && t.reviewDate < todayStr);
+  const overdueActions = overdueTickets.length;
 
   // Stalled high priority: Priority High/Highest & updated > 7 days ago
   const now = new Date();
   const stalledHighPriority = tickets.filter(t => {
-    if (t.status === 'Closed' || t.status === 'Resolved') return false;
+    if (!isActiveTicket(t)) return false;
     const isHigh = t.priority === 'High' || t.priority === 'Highest' || t.impact === 'High Impact';
     const updatedDate = new Date(t.updated || t.created);
     const diffDays = (now - updatedDate) / (1000 * 3600 * 24);
@@ -30,7 +31,7 @@ export function WeeklyIndicators({ tickets, onSelectBox, baseJql }) {
       value: activeTickets.length,
       sub: 'Open & In-Progress SNH Tickets',
       tickets: activeTickets,
-      jql: addJqlClause(baseJql, 'status NOT IN (Resolved, Closed)'),
+      jql: addJqlClause(baseJql, 'status NOT IN (Done, Resolved, Closed)'),
       icon: <Activity size={22} color="#00f0ff" />,
       borderColor: 'rgba(0, 240, 255, 0.3)',
       bg: 'rgba(0, 240, 255, 0.05)'
@@ -40,7 +41,7 @@ export function WeeklyIndicators({ tickets, onSelectBox, baseJql }) {
       value: ownerlessTickets.length,
       sub: 'Unassigned Tickets Pending Lead',
       tickets: ownerlessTickets,
-      jql: addJqlClause(baseJql, 'assignee IS EMPTY AND status NOT IN (Resolved, Closed)'),
+      jql: addJqlClause(baseJql, 'assignee IS EMPTY AND status NOT IN (Done, Resolved, Closed)'),
       icon: <UserX size={22} color="#ef4444" />,
       borderColor: 'rgba(239, 68, 68, 0.3)',
       bg: 'rgba(239, 68, 68, 0.05)'
@@ -49,8 +50,8 @@ export function WeeklyIndicators({ tickets, onSelectBox, baseJql }) {
       title: 'Overdue Actions',
       value: overdueActions,
       sub: 'Passed Review Target Date',
-      tickets: tickets.filter(t => t.reviewDate && t.reviewDate < todayStr && t.status !== 'Closed'),
-      jql: addJqlClause(baseJql),
+      tickets: overdueTickets,
+      jql: addJqlClause(baseJql, 'status NOT IN (Done, Resolved, Closed)'),
       jqlNote: 'The review target is a dashboard-only date. JIRA supplies the selected area tickets; the overdue comparison is then calculated in the dashboard.',
       icon: <AlertOctagon size={22} color="#f59e0b" />,
       borderColor: 'rgba(245, 158, 11, 0.3)',
@@ -66,7 +67,7 @@ export function WeeklyIndicators({ tickets, onSelectBox, baseJql }) {
         const updatedDate = new Date(t.updated || t.created);
         return isHigh && (now - updatedDate) / (1000 * 3600 * 24) >= 7;
       }),
-      jql: addJqlClause(baseJql, 'priority IN (High, Highest) AND updated <= -7d AND status NOT IN (Resolved, Closed)'),
+      jql: addJqlClause(baseJql, 'priority IN (High, Highest) AND updated <= -7d AND status NOT IN (Done, Resolved, Closed)'),
       icon: <Flame size={22} color="#ec4899" />,
       borderColor: 'rgba(236, 72, 153, 0.3)',
       bg: 'rgba(236, 72, 153, 0.05)'
@@ -75,8 +76,8 @@ export function WeeklyIndicators({ tickets, onSelectBox, baseJql }) {
       title: 'Pending Closure',
       value: pendingClosure,
       sub: 'Resolved / Hygiene Sweep',
-      tickets: tickets.filter(t => t.pendingClosure || t.status === 'Resolved' || t.status === 'Pending Closure'),
-      jql: addJqlClause(baseJql, 'status = Resolved'),
+      tickets: tickets.filter(t => t.pendingClosure || ['Done', 'Resolved', 'Pending Closure'].includes(t.status)),
+      jql: addJqlClause(baseJql, 'status IN (Done, Resolved, "Pending Closure")'),
       icon: <Archive size={22} color="#10b981" />,
       borderColor: 'rgba(16, 185, 129, 0.3)',
       bg: 'rgba(16, 185, 129, 0.05)'
@@ -84,7 +85,7 @@ export function WeeklyIndicators({ tickets, onSelectBox, baseJql }) {
   ];
 
   return (
-    <div style={{
+    <div id="weekly-indicators" style={{
       display: 'grid',
       gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
       gap: '16px',

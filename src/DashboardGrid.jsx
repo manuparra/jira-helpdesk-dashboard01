@@ -4,12 +4,13 @@ import {
   CheckSquare, Layers, Folder, UserCheck, AlertTriangle, 
   CheckCircle2, MessageSquare, ChevronRight
 } from 'lucide-react';
-import { isOwnerlessTicket } from './areas';
+import { isActiveTicket, isOwnerlessTicket } from './areas';
 import { addJqlClause, jqlString } from './jql';
 
 export function DashboardGrid({ tickets, onSelectBox, baseJql }) {
   const now = new Date();
   const todayStr = now.toISOString().split('T')[0];
+  const openTickets = tickets.filter(isActiveTicket);
 
   // Helper calculation functions
   const getDaysDiff = (dateStr) => {
@@ -24,8 +25,8 @@ export function DashboardGrid({ tickets, onSelectBox, baseJql }) {
       id: 'unassigned',
       title: 'Unassigned',
       subtitle: 'Open tickets needing lead assignment',
-      tickets: tickets.filter(isOwnerlessTicket),
-      jql: addJqlClause(baseJql, 'assignee IS EMPTY AND status NOT IN (Resolved, Closed)'),
+      tickets: openTickets.filter(isOwnerlessTicket),
+      jql: addJqlClause(baseJql, 'assignee IS EMPTY AND status NOT IN (Done, Resolved, Closed)'),
       icon: <UserX size={20} color="#ef4444" />,
       color: '#ef4444',
       bg: 'rgba(239, 68, 68, 0.08)'
@@ -34,8 +35,8 @@ export function DashboardGrid({ tickets, onSelectBox, baseJql }) {
       id: 'acceptance_pending',
       title: 'Acceptance Pending',
       subtitle: 'Waiting for user/requester confirmation',
-      tickets: tickets.filter(t => t.acceptancePending || t.status === 'Waiting for customer' || t.status === 'Pending User Acceptance'),
-      jql: addJqlClause(baseJql, 'status = "Waiting for customer"'),
+      tickets: openTickets.filter(t => t.acceptancePending || t.status === 'Waiting for customer' || t.status === 'Pending User Acceptance'),
+      jql: addJqlClause(baseJql, 'status IN ("Waiting for customer", "Pending User Acceptance") AND status NOT IN (Done, Resolved, Closed)'),
       icon: <Clock size={20} color="#f59e0b" />,
       color: '#f59e0b',
       bg: 'rgba(245, 158, 11, 0.08)'
@@ -44,8 +45,8 @@ export function DashboardGrid({ tickets, onSelectBox, baseJql }) {
       id: 'high_impact',
       title: 'High Impact / Priority',
       subtitle: 'Critical & highest priority issues',
-      tickets: tickets.filter(t => t.impact === 'High Impact' || t.priority === 'Highest' || t.priority === 'High'),
-      jql: addJqlClause(baseJql, 'priority IN (High, Highest)'),
+      tickets: openTickets.filter(t => t.impact === 'High Impact' || t.priority === 'Highest' || t.priority === 'High'),
+      jql: addJqlClause(baseJql, 'priority IN (High, Highest) AND status NOT IN (Done, Resolved, Closed)'),
       icon: <AlertCircle size={20} color="#ec4899" />,
       color: '#ec4899',
       bg: 'rgba(236, 72, 153, 0.08)'
@@ -54,8 +55,8 @@ export function DashboardGrid({ tickets, onSelectBox, baseJql }) {
       id: 'inactivity',
       title: 'Inactivity / Ageing (>3d)',
       subtitle: 'No updates for over 3 days',
-      tickets: tickets.filter(t => getDaysDiff(t.updated || t.created) >= 3 && t.status !== 'Closed'),
-      jql: addJqlClause(baseJql, 'updated <= -3d AND status != Closed'),
+      tickets: openTickets.filter(t => getDaysDiff(t.updated || t.created) >= 3),
+      jql: addJqlClause(baseJql, 'updated <= -3d AND status NOT IN (Done, Resolved, Closed)'),
       icon: <Clock size={20} color="#8b5cf6" />,
       color: '#8b5cf6',
       bg: 'rgba(139, 92, 246, 0.08)'
@@ -64,8 +65,8 @@ export function DashboardGrid({ tickets, onSelectBox, baseJql }) {
       id: 'blockers',
       title: 'Blockers / Pending',
       subtitle: 'Flagged blockers & critical path holds',
-      tickets: tickets.filter(t => t.isBlocker || t.priority === 'Highest'),
-      jql: addJqlClause(baseJql, 'priority = Highest'),
+      tickets: openTickets.filter(t => t.isBlocker || t.priority === 'Highest'),
+      jql: addJqlClause(baseJql, 'priority = Highest AND status NOT IN (Done, Resolved, Closed)'),
       icon: <ShieldAlert size={20} color="#dc2626" />,
       color: '#dc2626',
       bg: 'rgba(220, 38, 38, 0.08)'
@@ -74,8 +75,8 @@ export function DashboardGrid({ tickets, onSelectBox, baseJql }) {
       id: 'cross_node',
       title: 'Cross-Node / All',
       subtitle: 'Inter-SRC & cross-functional tickets',
-      tickets: tickets.filter(t => t.isCrossNode),
-      jql: addJqlClause(baseJql, 'labels = cross-node'),
+      tickets: openTickets.filter(t => t.isCrossNode),
+      jql: addJqlClause(baseJql, 'labels = cross-node AND status NOT IN (Done, Resolved, Closed)'),
       icon: <GitBranch size={20} color="#06b6d4" />,
       color: '#06b6d4',
       bg: 'rgba(6, 182, 212, 0.08)'
@@ -83,9 +84,9 @@ export function DashboardGrid({ tickets, onSelectBox, baseJql }) {
     {
       id: 'closure_candidates',
       title: 'Closure Candidates',
-      subtitle: 'Resolved tickets ready for final sweep',
-      tickets: tickets.filter(t => t.pendingClosure || t.status === 'Resolved'),
-      jql: addJqlClause(baseJql, 'status = Resolved'),
+      subtitle: 'Open tickets flagged for closure review',
+      tickets: openTickets.filter(t => t.pendingClosure),
+      jql: addJqlClause(baseJql, 'status NOT IN (Done, Resolved, Closed)'),
       icon: <CheckSquare size={20} color="#10b981" />,
       color: '#10b981',
       bg: 'rgba(16, 185, 129, 0.08)'
@@ -93,9 +94,9 @@ export function DashboardGrid({ tickets, onSelectBox, baseJql }) {
     {
       id: 'all_tickets',
       title: 'All Active Tickets',
-      subtitle: 'Complete list of non-closed tickets',
-      tickets: tickets.filter(t => t.status !== 'Closed'),
-      jql: addJqlClause(baseJql, 'status != Closed'),
+      subtitle: 'Complete list of open tickets',
+      tickets: openTickets,
+      jql: addJqlClause(baseJql, 'status NOT IN (Done, Resolved, Closed)'),
       icon: <Layers size={20} color="#00f0ff" />,
       color: '#00f0ff',
       bg: 'rgba(0, 240, 255, 0.08)'
@@ -108,8 +109,8 @@ export function DashboardGrid({ tickets, onSelectBox, baseJql }) {
       id: 'active_tickets',
       title: 'Active Tickets',
       subtitle: 'Open & In-Progress status',
-      tickets: tickets.filter(t => t.status === 'Open' || t.status === 'In Progress'),
-      jql: addJqlClause(baseJql, 'status IN (Open, "In Progress")'),
+      tickets: openTickets.filter(t => t.status === 'Open' || t.status === 'In Progress'),
+      jql: addJqlClause(baseJql, 'status IN (Open, "In Progress") AND status NOT IN (Done, Resolved, Closed)'),
       icon: <CheckCircle2 size={20} color="#3b82f6" />,
       color: '#3b82f6',
       bg: 'rgba(59, 130, 246, 0.08)'
@@ -118,8 +119,8 @@ export function DashboardGrid({ tickets, onSelectBox, baseJql }) {
       id: 'overdue_actions',
       title: 'Overdue Actions',
       subtitle: 'Passed planned duty review date',
-      tickets: tickets.filter(t => t.reviewDate && t.reviewDate < todayStr && t.status !== 'Closed'),
-      jql: addJqlClause(baseJql),
+      tickets: openTickets.filter(t => t.reviewDate && t.reviewDate < todayStr),
+      jql: addJqlClause(baseJql, 'status NOT IN (Done, Resolved, Closed)'),
       jqlNote: 'The review target is maintained by the dashboard. The overdue comparison is applied after JIRA returns the selected area tickets.',
       icon: <AlertTriangle size={20} color="#f97316" />,
       color: '#f97316',
@@ -129,11 +130,11 @@ export function DashboardGrid({ tickets, onSelectBox, baseJql }) {
       id: 'ageing_5d',
       title: '5+ Days Old',
       subtitle: 'Tickets created 5 to 14 days ago',
-      tickets: tickets.filter(t => {
+      tickets: openTickets.filter(t => {
         const days = getDaysDiff(t.created);
-        return days >= 5 && days < 15 && t.status !== 'Closed';
+        return days >= 5 && days < 15;
       }),
-      jql: addJqlClause(baseJql, 'created >= -14d AND created < -5d AND status != Closed'),
+      jql: addJqlClause(baseJql, 'created >= -14d AND created < -5d AND status NOT IN (Done, Resolved, Closed)'),
       icon: <Clock size={20} color="#a855f7" />,
       color: '#a855f7',
       bg: 'rgba(168, 85, 247, 0.08)'
@@ -142,11 +143,11 @@ export function DashboardGrid({ tickets, onSelectBox, baseJql }) {
       id: 'ageing_15d',
       title: '15+ Days Old',
       subtitle: 'Tickets created 15 to 29 days ago',
-      tickets: tickets.filter(t => {
+      tickets: openTickets.filter(t => {
         const days = getDaysDiff(t.created);
-        return days >= 15 && days < 30 && t.status !== 'Closed';
+        return days >= 15 && days < 30;
       }),
-      jql: addJqlClause(baseJql, 'created >= -29d AND created < -15d AND status != Closed'),
+      jql: addJqlClause(baseJql, 'created >= -29d AND created < -15d AND status NOT IN (Done, Resolved, Closed)'),
       icon: <Clock size={20} color="#e11d48" />,
       color: '#e11d48',
       bg: 'rgba(225, 29, 72, 0.08)'
@@ -155,8 +156,8 @@ export function DashboardGrid({ tickets, onSelectBox, baseJql }) {
       id: 'ageing_30d',
       title: '30+ Days Old',
       subtitle: 'Stalled tickets active >30 days',
-      tickets: tickets.filter(t => getDaysDiff(t.created) >= 30 && t.status !== 'Closed'),
-      jql: addJqlClause(baseJql, 'created <= -30d AND status != Closed'),
+      tickets: openTickets.filter(t => getDaysDiff(t.created) >= 30),
+      jql: addJqlClause(baseJql, 'created <= -30d AND status NOT IN (Done, Resolved, Closed)'),
       icon: <AlertCircle size={20} color="#be123c" />,
       color: '#be123c',
       bg: 'rgba(190, 18, 60, 0.08)'
@@ -165,8 +166,8 @@ export function DashboardGrid({ tickets, onSelectBox, baseJql }) {
       id: 'waiting_customer',
       title: 'Waiting for Customer',
       subtitle: 'Awaiting user response or feedback',
-      tickets: tickets.filter(t => t.status === 'Waiting for customer' || t.acceptancePending),
-      jql: addJqlClause(baseJql, 'status = "Waiting for customer"'),
+      tickets: openTickets.filter(t => t.status === 'Waiting for customer' || t.acceptancePending),
+      jql: addJqlClause(baseJql, 'status = "Waiting for customer" AND status NOT IN (Done, Resolved, Closed)'),
       icon: <MessageSquare size={20} color="#06b6d4" />,
       color: '#06b6d4',
       bg: 'rgba(6, 182, 212, 0.08)'
@@ -174,9 +175,9 @@ export function DashboardGrid({ tickets, onSelectBox, baseJql }) {
     {
       id: 'pending_to_close',
       title: 'Pending to Close',
-      subtitle: 'Resolved tickets awaiting verification',
-      tickets: tickets.filter(t => t.pendingClosure || t.status === 'Resolved'),
-      jql: addJqlClause(baseJql, 'status = Resolved'),
+      subtitle: 'Open tickets flagged for closure review',
+      tickets: openTickets.filter(t => t.pendingClosure),
+      jql: addJqlClause(baseJql, 'status NOT IN (Done, Resolved, Closed)'),
       icon: <CheckSquare size={20} color="#10b981" />,
       color: '#10b981',
       bg: 'rgba(16, 185, 129, 0.08)'
@@ -185,7 +186,7 @@ export function DashboardGrid({ tickets, onSelectBox, baseJql }) {
 
   // Section 3: Key Area Grouping
   const keyAreasMap = {};
-  tickets.forEach(t => {
+  openTickets.forEach(t => {
     const area = t.areaNode || 'Unspecified Area';
     if (!keyAreasMap[area]) keyAreasMap[area] = [];
     keyAreasMap[area].push(t);
@@ -195,7 +196,7 @@ export function DashboardGrid({ tickets, onSelectBox, baseJql }) {
     title: area,
     subtitle: `Key Area • ${keyAreasMap[area].length} Ticket(s)`,
     tickets: keyAreasMap[area],
-    jql: addJqlClause(baseJql),
+    jql: addJqlClause(baseJql, 'status NOT IN (Done, Resolved, Closed)'),
     icon: <Folder size={20} color="#00f0ff" />,
     color: '#00f0ff',
     bg: 'rgba(0, 240, 255, 0.06)'
@@ -203,7 +204,7 @@ export function DashboardGrid({ tickets, onSelectBox, baseJql }) {
 
   // Section 4: Assignee Grouping
   const assigneeMap = {};
-  tickets.forEach(t => {
+  openTickets.forEach(t => {
     const owner = t.assignee || 'Unassigned';
     if (!assigneeMap[owner]) assigneeMap[owner] = [];
     assigneeMap[owner].push(t);
@@ -211,13 +212,22 @@ export function DashboardGrid({ tickets, onSelectBox, baseJql }) {
   const assigneeBoxes = Object.keys(assigneeMap).map(owner => ({
     id: `owner_${owner}`,
     title: owner,
-    subtitle: owner === 'Unassigned' ? 'Unassigned Queue' : `Assigned Workload`,
+    subtitle: owner === 'Unassigned' ? 'Unassigned Queue' : 'Open tickets',
     tickets: assigneeMap[owner],
-    jql: addJqlClause(baseJql, owner === 'Unassigned' ? 'assignee IS EMPTY' : `assignee = ${jqlString(owner)}`),
+    jql: addJqlClause(baseJql, `${owner === 'Unassigned' ? 'assignee IS EMPTY' : `assignee = ${jqlString(owner)}`} AND status NOT IN (Done, Resolved, Closed)`),
     icon: <UserCheck size={20} color={owner === 'Unassigned' ? '#ef4444' : '#3b82f6'} />,
     color: owner === 'Unassigned' ? '#ef4444' : '#3b82f6',
     bg: owner === 'Unassigned' ? 'rgba(239, 68, 68, 0.06)' : 'rgba(59, 130, 246, 0.06)'
   }));
+  assigneeBoxes.sort((first, second) => {
+    if (first.title === 'Unassigned') return 1;
+    if (second.title === 'Unassigned') return -1;
+    const surname = (name) => name.includes(',')
+      ? name.split(',')[0].trim()
+      : name.trim().split(/\s+/).at(-1);
+    return surname(first.title).localeCompare(surname(second.title), undefined, { sensitivity: 'base' })
+      || first.title.localeCompare(second.title, undefined, { sensitivity: 'base' });
+  });
 
   const renderCardGrid = (boxes) => (
     <div style={{
@@ -305,7 +315,7 @@ export function DashboardGrid({ tickets, onSelectBox, baseJql }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', marginBottom: '32px' }}>
       {/* 1. Core Review Focus Areas */}
-      <div>
+      <section id="review-categories">
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
           <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>
             Core Review Categories
@@ -313,10 +323,10 @@ export function DashboardGrid({ tickets, onSelectBox, baseJql }) {
           <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>• Click any box to inspect list</span>
         </div>
         {renderCardGrid(reviewBoxes)}
-      </div>
+      </section>
 
       {/* 2. Status & Ageing Timelines */}
-      <div>
+      <section id="status-ageing">
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
           <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>
             Status & Ageing Timelines
@@ -324,27 +334,27 @@ export function DashboardGrid({ tickets, onSelectBox, baseJql }) {
           <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>• Active, Overdues, 5d, 15d, 30d+, Pending Close</span>
         </div>
         {renderCardGrid(statusTimeBoxes)}
-      </div>
+      </section>
 
       {/* 3. Breakdown by Key Area */}
-      <div>
+      <section id="tickets-by-area">
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
           <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>
             Tickets by Key Area / Node
           </h3>
         </div>
         {renderCardGrid(keyAreaBoxes)}
-      </div>
+      </section>
 
       {/* 4. Breakdown by Assignee */}
-      <div>
+      <section id="tickets-by-assignee">
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
           <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>
-            Tickets by Assignee
+            Ticket by Assignee (Open tickets)
           </h3>
         </div>
         {renderCardGrid(assigneeBoxes)}
-      </div>
+      </section>
     </div>
   );
 }

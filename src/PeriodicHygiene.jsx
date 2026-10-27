@@ -1,16 +1,17 @@
 import React from 'react';
 import { RefreshCw, CheckCircle2, GitMerge, FileX, Archive, ShieldCheck, AlertCircle } from 'lucide-react';
+import { isActiveTicket } from './areas';
 
 export function PeriodicHygiene({ tickets, onHygieneAction }) {
-  // Stalled or old tickets (> 14 days inactive or resolved)
+  // Stale or closure-flagged open tickets.
   const hygieneCandidates = tickets.filter(t => {
     const updated = new Date(t.updated || t.created);
     const daysInactive = (new Date() - updated) / (1000 * 3600 * 24);
-    return daysInactive > 14 || t.pendingClosure || t.status === 'Resolved';
+    return isActiveTicket(t) && (daysInactive > 14 || t.pendingClosure);
   });
 
   return (
-    <div className="glass-panel" style={{ padding: '24px', marginBottom: '28px', border: '1px solid rgba(139, 92, 246, 0.3)' }}>
+    <div className="glass-panel" id="periodic-hygiene" style={{ padding: '24px', marginBottom: '28px', border: '1px solid rgba(139, 92, 246, 0.3)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
         <div>
           <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -18,7 +19,7 @@ export function PeriodicHygiene({ tickets, onHygieneAction }) {
             Periodic Hygiene Sweep (Monthly / PI Review)
           </h3>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', marginTop: '2px' }}>
-            Decide action for inactive or resolved tickets: <strong>Retain</strong>, <strong>Close</strong>, <strong>Merge</strong>, or <strong>Convert</strong>. Verify completion of previous review actions.
+            Decide action for stale or closure-flagged open tickets: <strong>Retain</strong>, <strong>Close</strong>, <strong>Merge</strong>, or <strong>Convert</strong>. Verify completion of previous review actions.
           </p>
         </div>
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { 
-  Server, RefreshCw, LogOut, AlertTriangle, Search, Grid, Table as TableIcon, Moon, Sun
+  Server, LogOut, AlertTriangle, Search, Grid, Table as TableIcon, Moon, Sun
 } from 'lucide-react';
 import { TokenModal } from './TokenModal';
 import { WeeklyIndicators } from './WeeklyIndicators';
@@ -20,7 +20,6 @@ export function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [showHygiene, setShowHygiene] = useState(false);
   const [viewMode, setViewMode] = useState('boxes'); // 'boxes' | 'table'
   const [selectedArea, setSelectedArea] = useState('Operations');
   const [theme, setTheme] = useState(() => localStorage.getItem('dashboard-theme') || 'dark');
@@ -253,26 +252,6 @@ export function App() {
             </button>
 
             <button
-              onClick={() => setShowHygiene(!showHygiene)}
-              style={{
-                padding: '8px 16px',
-                background: showHygiene ? 'rgba(139, 92, 246, 0.25)' : 'rgba(255,255,255,0.06)',
-                border: '1px solid rgba(139, 92, 246, 0.4)',
-                borderRadius: '8px',
-                color: 'var(--text-main)',
-                fontSize: '0.85rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}
-            >
-              <RefreshCw size={15} color="#8b5cf6" />
-              {showHygiene ? 'Hide Hygiene View' : 'Periodic Hygiene (Monthly/PI)'}
-            </button>
-
-            <button
               onClick={handleLogout}
               style={{
                 padding: '8px 14px',
@@ -318,7 +297,7 @@ export function App() {
           )}
 
           {/* Primary dashboard filter: counts are all active (not Resolved/Closed) tickets. */}
-          <section className="area-filter glass-panel">
+          <section className="area-filter glass-panel" id="primary-filter">
             <div>
               <span className="filter-eyebrow">Primary filter</span>
               <label htmlFor="area-filter">Area</label>
@@ -338,6 +317,20 @@ export function App() {
             <p>All dashboard metrics and ticket lists below are filtered to <strong>{selectedArea}</strong>.</p>
           </section>
 
+          <nav className="section-nav glass-panel" aria-label="Dashboard sections">
+            <a href="#primary-filter">Primary filter</a>
+            <a href="#weekly-indicators">Weekly indicators</a>
+            <a href="#nodes">Nodes</a>
+            <a href="#metrics">Metrics</a>
+            <a href="#resolution-by-priority">Resolution by priority</a>
+            <a href="#periodic-hygiene">Periodic hygiene</a>
+            <a href="#ticket-review">Ticket review</a>
+            <a href="#review-categories">Review categories</a>
+            <a href="#status-ageing">Status & ageing</a>
+            <a href="#tickets-by-area">Tickets by area</a>
+            <a href="#tickets-by-assignee">Tickets by assignee</a>
+          </nav>
+
           {/* Weekly Indicators KPI Bar */}
           <WeeklyIndicators tickets={areaFilteredTickets} onSelectBox={handleBoxClick} baseJql={areaBaseJql} />
 
@@ -345,10 +338,7 @@ export function App() {
 
           <MetricsSummary tickets={areaFilteredTickets} onSelectBox={handleBoxClick} baseJql={areaBaseJql} />
 
-          {/* Periodic Hygiene Component */}
-          {showHygiene && (
-            <PeriodicHygiene tickets={areaFilteredTickets} onHygieneAction={handleHygieneAction} />
-          )}
+          <PeriodicHygiene tickets={areaFilteredTickets} onHygieneAction={handleHygieneAction} />
 
           {/* Search & View Mode Switcher */}
           <div style={{
@@ -358,7 +348,7 @@ export function App() {
             marginBottom: '24px',
             gap: '16px',
             flexWrap: 'wrap'
-          }}>
+          }} id="ticket-review">
             <div style={{ position: 'relative', width: '340px' }}>
               <input
                 type="text"
@@ -450,4 +440,3 @@ export function App() {
 }
 
 export default App;
-

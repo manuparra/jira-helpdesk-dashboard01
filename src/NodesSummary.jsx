@@ -14,7 +14,7 @@ const formatLastUpdate = (date) => {
 
 export function NodesSummary({ tickets, onSelectBox, baseJql }) {
   return (
-    <section className="nodes-section">
+    <section className="nodes-section" id="nodes">
       <div className="section-heading">
         <div>
           <h3><Network size={19} /> Nodes</h3>
@@ -32,7 +32,7 @@ export function NodesSummary({ tickets, onSelectBox, baseJql }) {
           );
           const jql = addJqlClause(
             baseJql,
-            `"Affected Node" = ${jqlString(node)} AND status NOT IN (Resolved, Closed)`
+            `"Affected Node" = ${jqlString(node)} AND status NOT IN (Done, Resolved, Closed)`
           );
           const openModal = () => onSelectBox(`${node} node`, nodeTickets, jql);
 

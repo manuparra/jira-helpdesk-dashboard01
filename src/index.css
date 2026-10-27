@@ -98,6 +98,36 @@ body {
   gap: 6px;
 }
 
+.section-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+  padding: 12px 16px;
+}
+
+.section-nav a {
+  padding: 6px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 7px;
+  color: var(--accent-cyan);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.section-nav a:hover,
+.section-nav a:focus-visible {
+  border-color: var(--border-highlight);
+  background: var(--bg-card-hover);
+}
+
+section[id],
+#weekly-indicators,
+#ticket-review {
+  scroll-margin-top: 16px;
+}
+
 .area-filter {
   margin-bottom: 24px;
   padding: 16px 20px;
