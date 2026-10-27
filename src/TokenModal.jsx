@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Key, ShieldCheck, Server, AlertCircle, RefreshCw, LogOut, CheckCircle2, Lock } from 'lucide-react';
+import packageJson from '../package.json';
 
 export function TokenModal({ onConnect, isConnecting }) {
   const [token, setToken] = useState('');
@@ -54,6 +55,9 @@ export function TokenModal({ onConnect, isConnecting }) {
             </h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
               Authentication & Jira API Connection
+            </p>
+            <p style={{ color: 'var(--text-dim)', fontSize: '0.75rem', marginTop: '2px' }}>
+              Version {packageJson.version}
             </p>
           </div>
         </div>
