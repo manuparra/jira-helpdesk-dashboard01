@@ -14,6 +14,8 @@ import { MOCK_SNH_TICKETS } from './mockData';
 import { AREAS, countActiveTicketsForArea, ticketHasArea } from './areas';
 import { jqlString } from './jql';
 
+const ALL_AREAS = 'All';
+
 export function App() {
   const [authConfig, setAuthConfig] = useState(null);
   const [tickets, setTickets] = useState([]);
@@ -184,11 +186,16 @@ export function App() {
 
   const areaBaseJql = useMemo(() => {
     const projectKey = authConfig?.projectKey || 'SNH';
-    return `project = ${jqlString(projectKey)} AND "Area" = ${jqlString(selectedArea)}`;
+    const projectClause = `project = ${jqlString(projectKey)}`;
+    return selectedArea === ALL_AREAS
+      ? projectClause
+      : `${projectClause} AND "Area" = ${jqlString(selectedArea)}`;
   }, [authConfig?.projectKey, selectedArea]);
 
   const areaFilteredTickets = useMemo(
-    () => tickets.filter(ticket => ticketHasArea(ticket, selectedArea)),
+    () => selectedArea === ALL_AREAS
+      ? tickets
+      : tickets.filter(ticket => ticketHasArea(ticket, selectedArea)),
     [tickets, selectedArea]
   );
 
@@ -308,6 +315,9 @@ export function App() {
               onChange={(event) => setSelectedArea(event.target.value)}
               aria-label="Filter dashboard by area"
             >
+              <option value={ALL_AREAS}>
+                {ALL_AREAS} ({tickets.length})
+              </option>
               {AREAS.map(area => (
                 <option key={area} value={area}>
                   {area} ({countActiveTicketsForArea(tickets, area)})
